@@ -8,36 +8,23 @@
 }
 
 /* ── Hero (Our Concepts cover) ──
-   Fills viewport below fixed nav so white content starts only after scroll.
-   Grid overlap — no position:relative on .blog-hero. */
+   Height follows the image (no letterboxing / black bars). Overlay is absolute when used. */
 .blog-hero {
+  position: relative;
   width: 100%;
-  min-height: calc(100vh - 55px);
-  height: calc(100vh - 55px);
-  min-height: calc(100dvh - 55px);
-  height: calc(100dvh - 55px);
+  background: #fff;
   overflow: hidden;
-  background: #0a0a0a;
-  display: grid;
-  grid-template: 1fr / 1fr;
-  align-items: stretch;
-  justify-items: stretch;
 }
 
 .blog-hero-img {
-  grid-area: 1 / 1;
   width: 100%;
-  height: 100%;
-  min-height: 0;
-  max-width: none;
-  object-fit: cover;
-  object-position: center 40%;
+  height: auto;
   display: block;
-  z-index: 0;
 }
 
 .blog-hero-overlay {
-  grid-area: 1 / 1;
+  position: absolute;
+  inset: 0;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -71,12 +58,6 @@
   text-shadow:
     0 2px 10px rgba(0, 0, 0, 0.55),
     0 14px 48px rgba(0, 0, 0, 0.5);
-}
-
-@media (max-width: 640px) {
-  .blog-hero-img {
-    object-position: center 38%;
-  }
 }
 
 /* ── Status ── */

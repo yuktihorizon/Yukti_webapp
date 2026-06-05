@@ -10,6 +10,11 @@
     transition: all 0.3s ease;
 }
 
+.site-header a,
+.site-header button {
+    -webkit-tap-highlight-color: transparent;
+}
+
 /* Header Container */
 .header-container {
     display: flex;

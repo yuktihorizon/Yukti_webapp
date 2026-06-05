@@ -310,12 +310,20 @@ p {
   border: 0;
 }
 
-/* Focus styles for accessibility */
+/* Focus: show ring only for keyboard (:focus-visible), not on every mouse click */
 button:focus,
 input:focus,
 select:focus,
 textarea:focus,
 a:focus {
+  outline: none;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
   outline: 2px solid #007bff;
   outline-offset: 2px;
 }
