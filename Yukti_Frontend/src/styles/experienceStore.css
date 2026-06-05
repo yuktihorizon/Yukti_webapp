@@ -1,0 +1,215 @@
+/* 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #333;
+    background-color: #fff;
+  }
+  
+  .hero-section {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: #e8e4dd;
+    display: flex;
+    align-items: center;
+    padding: 0 5%;
+    background-image: url("/assets/Headerstore.png");
+    background-size: cover;
+    background-position: center;
+    text-align: left;
+  }
+  
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+  }
+  
+  .hero-title {
+    font-size: 9rem;
+    font-weight: 200;
+    line-height: 1;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+    letter-spacing: -1px;
+  }
+  
+  .indented {
+    display: inline-block;
+    margin-left: 290px;
+  }
+  
+  .hero-description {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    margin-top: 20px;
+    color: white;
+  }
+  
+  .hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .store-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    padding: 2rem 5%;
+  }
+  
+  .store-card {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .store-image-container {
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  
+  .store-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .store-info {
+    padding: 0.5rem 0;
+  }
+  
+  .store-name {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  
+  .store-address,
+  .store-phone,
+  .store-hours {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+  }
+  
+  @media (max-width: 1024px) {
+    .hero-title {
+      font-size: 5rem;
+      text-align: left;
+    }
+  
+    .indented {
+      margin-left: 100px;
+    }
+  
+    .hero-description {
+      font-size: 1rem;
+    }
+  
+    .store-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .hero-section {
+      flex-direction: column;
+      justify-content: center;
+      padding: rem 2%;
+      height: auto;
+      text-align: center;
+    }
+  
+    .hero-title {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+  
+    .indented {
+      margin-left: 0;
+    }
+  
+    .hero-description {
+      font-size: 0.95rem;
+      text-align: center;
+    }
+  
+    .hero-text {
+      align-items: center;
+    }
+  
+    .store-grid {
+      grid-template-columns: 1fr;
+      padding: 1.5rem 2%;
+      gap: 1rem;
+    }
+  
+    .store-image-container {
+      height: 230px;
+    }
+  
+    .store-name {
+      font-size: 1rem;
+    }
+  
+    .store-address,
+    .store-phone,
+    .store-hours {
+      font-size: 0.8rem;
+    }
+  }
+   */
+   .coming-soon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #111, #222);
+    color: white;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+  }
+  
+  .coming-soon-container h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+  
+  .loader {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    height: 40px;
+  }
+  
+  .loader span {
+    width: 6px;
+    height: 100%;
+    background-color: white;
+    animation: bar-loader 1s infinite ease-in-out;
+  }
+  
+  .loader span:nth-child(1) { animation-delay: 0s; }
+  .loader span:nth-child(2) { animation-delay: 0.1s; }
+  .loader span:nth-child(3) { animation-delay: 0.2s; }
+  .loader span:nth-child(4) { animation-delay: 0.3s; }
+  .loader span:nth-child(5) { animation-delay: 0.4s; }
+  
+  @keyframes bar-loader {
+    0%, 100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1); }
+  }
+  
+  

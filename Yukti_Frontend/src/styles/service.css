@@ -1,0 +1,465 @@
+.service-page-loading {
+  min-height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-page-loading-inner {
+  font-family: system-ui, sans-serif;
+  color: #666;
+}
+
+/* Service Page — nav offset must match .header-container heights in navbar.css */
+.service-page {
+  width: 100%;
+  overflow-x: hidden;
+  --service-nav-offset: 64px;
+  padding-top: var(--service-nav-offset);
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .service-page {
+    --service-nav-offset: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-page {
+    --service-nav-offset: 56px;
+  }
+}
+
+/* Hero — full viewport below nav; grid overlap (no position:relative on section) */
+.service-hero {
+  width: 100%;
+  min-height: calc(100vh - var(--service-nav-offset));
+  height: calc(100vh - var(--service-nav-offset));
+  min-height: calc(100dvh - var(--service-nav-offset));
+  height: calc(100dvh - var(--service-nav-offset));
+  overflow: hidden;
+  background: #0a0a0a;
+  display: grid;
+  grid-template: 1fr / 1fr;
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.service-hero-img {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-width: none;
+  object-fit: cover;
+  /* Center of painting (board / pieces); not the top book stack */
+  object-position: center 58%;
+  display: block;
+  z-index: 0;
+}
+
+.service-hero-overlay {
+  grid-area: 1 / 1;
+  z-index: 1;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.4) 0%,
+    rgba(0, 0, 0, 0.15) 45%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  pointer-events: none;
+}
+
+/* Mobile: hero hugs image height — no letterboxing; image flush under header */
+@media (max-width: 768px) {
+  .service-hero {
+    display: block;
+    position: relative;
+    min-height: 0;
+    height: auto;
+    overflow: hidden;
+  }
+
+  .service-hero-img {
+    grid-area: unset;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    object-fit: unset;
+    object-position: unset;
+    display: block;
+    position: relative;
+    z-index: 0;
+  }
+
+  .service-hero-overlay {
+    grid-area: unset;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    min-height: 0;
+    z-index: 1;
+  }
+}
+
+.service-hero-text {
+  grid-area: 1 / 1;
+  z-index: 2;
+  align-self: center;
+  justify-self: center;
+  margin: 0;
+  padding: 0 clamp(16px, 4vw, 32px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2px, 1vh, 12px);
+  text-align: center;
+  font-family: inherit;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.hero-word {
+  display: block;
+  font-size: clamp(2.75rem, 10vw, 6rem);
+  font-weight: 700;
+  line-height: 1.08;
+  color: #fafafa;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow:
+    0 2px 20px rgba(0, 0, 0, 0.55),
+    0 6px 40px rgba(0, 0, 0, 0.45);
+}
+
+/* Capabilities Intro Section */
+.capabilities-intro {
+  padding: 100px 0;
+  background-color: #fff;
+}
+
+.capabilities-intro-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@media (min-width: 768px) {
+  .capabilities-intro-container {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 80px;
+  }
+}
+
+.capabilities-intro-title h2 {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #111;
+  white-space: nowrap;
+}
+
+.capabilities-intro-content {
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .capabilities-intro-content {
+    margin-left: auto;
+    padding-top: 20px;
+  }
+}
+
+.capabilities-intro-content p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: #444;
+}
+
+/* Capability Sections */
+.capability-section {
+  padding: 80px 40px;
+}
+
+.capability-dark {
+  background-color: #111;
+  color: #fff;
+}
+
+.capability-light {
+  background-color: #fff;
+  color: #111;
+}
+
+.capability-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: min(1520px, 100%);
+  margin: 0 auto 60px;
+}
+
+.capability-number {
+  font-size: clamp(1.15rem, 2.2vw, 1.65rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.capability-label {
+  font-size: clamp(1.35rem, 2.8vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.capability-body {
+  max-width: min(1520px, 100%);
+  margin: 0 auto 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+@media (min-width: 768px) {
+  .capability-body {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 60px;
+  }
+}
+
+.capability-text {
+  flex: 1;
+}
+
+.capability-heading {
+  font-size: clamp(2rem, 4.8vw, 3.35rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.capability-description {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .capability-description {
+    max-width: 400px;
+    margin-left: auto;
+    padding-top: 10px;
+  }
+}
+
+.capability-description p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  opacity: 0.85;
+}
+
+.capability-images {
+  max-width: min(1520px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 2.5vw, 32px);
+}
+
+.capability-img-wrapper {
+  overflow: hidden;
+  border-radius: 4px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: min(52vw, 640px);
+}
+
+.capability-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* Service Form Section */
+.service-form-section {
+  position: relative;
+  padding: 100px 20px;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-form-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.service-form-container {
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 50px 40px;
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+}
+
+.service-form-container h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.service-form-subtitle {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 36px;
+}
+
+.service-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+
+.service-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.service-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.service-form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.service-form-group input {
+  padding: 12px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background: #fafafa;
+}
+
+.service-form-group input:focus {
+  border-color: #111;
+}
+
+.service-form-group input::placeholder {
+  color: #aaa;
+}
+
+.service-submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.service-submit-btn:hover {
+  background: #333;
+}
+
+/* Mobile Responsive */
+@media (max-width: 767px) {
+  .hero-word {
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+  }
+
+  .capabilities-intro {
+    padding: 60px 0;
+  }
+
+  .capabilities-intro-container {
+    padding: 0 20px;
+  }
+
+  .capability-section {
+    padding: 60px 20px;
+  }
+
+  .capability-images {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .capability-img-wrapper {
+    aspect-ratio: 16 / 10;
+    max-height: min(70vw, 520px);
+  }
+
+  .service-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .service-form-container {
+    padding: 30px 20px;
+  }
+
+  .service-form-section {
+    padding: 60px 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-word {
+    font-size: 2rem;
+  }
+
+  .capabilities-intro-title h2 {
+    font-size: 2rem;
+  }
+
+  .capability-heading {
+    font-size: 1.65rem;
+  }
+
+  .capability-img-wrapper {
+    max-height: min(78vw, 440px);
+  }
+}

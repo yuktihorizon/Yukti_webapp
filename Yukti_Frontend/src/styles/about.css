@@ -1,0 +1,480 @@
+/* Global Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    color: #333;
+  }
+  
+/* Hero Section - ORIGINAL STATE */
+  .hero-section {
+    min-height: 80vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    position: relative;
+    text-align: center;
+    padding: 80px 20px 40px; /* Account for fixed navbar */
+  }
+  
+  .hero-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .hero-content1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: 0.5px;
+    text-align: left;
+    max-width: 600px;
+    color: white;
+}
+
+  .hero-content2 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: 0.5px;
+    text-align: right;
+    max-width: 600px;
+    align-self: flex-end;
+    color: white;
+}
+
+/* About Section - WHITE BACKGROUND */
+.about-section {
+    padding: 60px 0;
+    background-color: white !important;
+    color: #000 !important; /* Darker black for better visibility */
+}
+
+@media (min-width: 768px) {
+  .about-section {
+    padding: 80px 0;
+    }
+  }
+  
+  .about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    gap: 30px;
+}
+
+@media (min-width: 768px) {
+    .about-container {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 60px;
+    }
+  }
+  
+  .about-title h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700; /* Bolder font weight */
+    margin-bottom: 0;
+    flex-shrink: 0;
+    color: #000 !important; /* Darker black for better visibility */
+}
+
+@media (min-width: 768px) {
+    .about-title h2 {
+    margin-bottom: 30px;
+    }
+  }
+  
+  .about-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+@media (min-width: 768px) {
+    .about-content {
+    margin-left: auto;
+    }
+  }
+  
+  .about-content p {
+    font-size: clamp(1rem, 2.5vw, 1.125rem);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #000 !important; /* Darker black for better visibility */
+    font-weight: 500; /* Slightly bolder for better readability */
+  }
+  
+  .more-button {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    color: #333;
+  }
+  
+  .dot {
+    margin-left: 5px;
+  }
+  
+  .divider {
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 50px auto 0;
+    max-width: 1200px;
+    width: calc(100% - 40px);
+  }
+  
+/* We Are Yukti Section - BLACK BACKGROUND */
+  .we-are-section {
+    padding: 60px 0;
+    background-color: black;
+    color: white;
+  }
+
+@media (min-width: 768px) {
+    .we-are-section {
+        padding: 80px 0;
+    }
+}
+
+  .we-are-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    gap: 40px;
+  }
+
+@media (min-width: 768px) {
+    .we-are-container {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+  
+  .we-are-image {
+    width: 100%;
+    max-width: 500px;
+    order: 1;
+}
+
+@media (min-width: 768px) {
+    .we-are-image {
+        order: 0;
+    }
+  }
+  
+  .furniture-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .we-are-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    order: 0;
+}
+
+@media (min-width: 768px) {
+    .we-are-content {
+        order: 1;
+    }
+  }
+  
+  .we-are-content h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 400;
+    margin-bottom: 30px;
+    line-height: 1.2;
+    color: white;
+  }
+  
+  .brand-name {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 500;
+    color: white;
+  }
+  
+  .we-are-text p {
+    font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: white;
+    max-width: 600px;
+  }
+  
+/* Why Choose Yukti Section - BLACK BACKGROUND */
+  .why-choose-section {
+    padding: 60px 0;
+    background-color: black;
+    color: white;
+  }
+  
+@media (min-width: 768px) {
+    .why-choose-section {
+        padding: 80px 0;
+    }
+}
+
+.why-choose-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px;
+    gap: 40px;
+  }
+  
+@media (min-width: 768px) {
+    .why-choose-container {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.why-choose-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    order: 0;
+}
+
+@media (min-width: 768px) {
+    .why-choose-content {
+        width: 60%;
+        order: 0;
+    }
+  }
+  
+  .why-choose-content h2 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 400;
+    margin-bottom: 30px;
+    line-height: 1.2;
+    color: white;
+  }
+  
+  .why-choose-text p {
+    font-size: clamp(0.9rem, 2.5vw, 0.95rem);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: white;
+    max-width: 600px;
+  }
+  
+  .why-choose-image {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    order: 1;
+}
+
+@media (min-width: 768px) {
+    .why-choose-image {
+        width: 40%;
+        justify-content: flex-end;
+        order: 1;
+    }
+}
+
+/* WHITE DIVIDER AFTER WHY CHOOSE YUKTI SECTION */
+.why-choose-section .divider {
+    height: 1px;
+    background-color: white; /* White line */
+    margin: 50px auto 0;
+    max-width: 1200px;
+    width: calc(100% - 40px);
+}
+
+/* Mobile Optimizations */
+  @media (max-width: 767px) {
+    .hero-section {
+        min-height: 60vh;
+        padding: 60px 15px 30px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-content {
+        gap: 30px;
+    }
+
+    .hero-content1,
+    .hero-content2 {
+        text-align: center;
+        align-self: center;
+        max-width: 100%;
+        color: white !important; /* Force white text on mobile */
+    }
+
+    .about-container,
+    .we-are-container,
+    .why-choose-container {
+        padding: 0 15px;
+    }
+  
+    .about-content,
+    .we-are-text,
+    .why-choose-text {
+      max-width: 100%;
+    }
+
+    .we-are-image,
+    .why-choose-image {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .furniture-image {
+        border-radius: 6px;
+    }
+
+    /* Ensure ABOUT section text is black on mobile */
+    .about-section {
+        background-color: white !important;
+        color: #333 !important;
+    }
+
+    .about-title h2 {
+        color: #333 !important;
+    }
+
+    .about-content p {
+        color: #333 !important;
+    }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 480px) {
+    .hero-section {
+        min-height: 50vh;
+        padding: 50px 10px 20px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-content {
+        gap: 20px;
+    }
+
+    .hero-content1,
+    .hero-content2 {
+        color: white !important; /* Force white text on small mobile */
+    }
+  
+    .about-container,
+    .we-are-container,
+    .why-choose-container {
+        padding: 0 10px;
+    }
+
+    .about-section,
+    .we-are-section,
+    .why-choose-section {
+        padding: 40px 0;
+    }
+
+    /* Ensure ABOUT section text is black on small mobile */
+    .about-section {
+        background-color: white !important;
+        color: #333 !important;
+    }
+
+    .about-title h2 {
+        color: #333 !important;
+    }
+
+    .about-content p {
+        color: #333 !important;
+    }
+}
+
+/* Landscape Orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero-section {
+        min-height: 40vh;
+        padding: 40px 20px;
+        background-size: cover;
+        background-position: center;
+    }
+
+    .hero-content {
+        gap: 20px;
+    }
+
+    .hero-content1,
+    .hero-content2 {
+        color: white !important; /* Force white text on landscape */
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .furniture-image {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+    .hero-content1,
+    .hero-content2 {
+        transition: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .about-section {
+        background-color: #1a1a1a;
+    }
+
+    .about-title h2,
+    .about-content p,
+    .more-button {
+        color: #e0e0e0;
+    }
+
+    .divider {
+        background-color: #333;
+    }
+    }
+
+  

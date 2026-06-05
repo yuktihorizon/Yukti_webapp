@@ -1,0 +1,77 @@
+.loading-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 60vh;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  background: #000;
+  box-sizing: border-box;
+}
+
+.loading-fullscreen {
+  position: fixed;
+  inset: 0;
+  min-height: 100dvh;
+  min-height: 100vh;
+  z-index: 9999;
+}
+
+.loading-video-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(85vw, 85vh, 560px);
+  max-width: 100%;
+  aspect-ratio: 1;
+}
+
+.loading-fullscreen .loading-video-wrap {
+  width: min(80vw, 80vh, 720px);
+}
+
+.loading-video {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .loading-video-wrap {
+    width: min(65vw, 65vh, 520px);
+  }
+
+  .loading-fullscreen .loading-video-wrap {
+    width: min(70vw, 70vh, 620px);
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .loading-video-wrap {
+    width: min(50vw, 50vh, 600px);
+  }
+
+  .loading-fullscreen .loading-video-wrap {
+    width: min(55vw, 55vh, 760px);
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .loading-overlay {
+    padding: 1rem;
+  }
+
+  .loading-video-wrap {
+    width: min(88vw, 75vh, 400px);
+  }
+
+  .loading-fullscreen .loading-video-wrap {
+    width: min(90vw, 78vh, 480px);
+  }
+}

@@ -1,0 +1,138 @@
+.footer {
+  background-color: #000;
+  color: #fff;
+  padding: 60px 0 20px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-brand {
+  margin-bottom: 20px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.footer-logo-img {
+  height: 30px;
+  width: 30px;
+  margin-right: 10px;
+}
+
+.footer-logo-text {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.footer-tagline {
+  /* font-size: 0.9rem;
+  line-height: 1.6;
+  color: #aaa;
+  margin-bottom: 20px; */
+  font-size: 16px;
+  margin-top: 10px;
+  color: #bbb;
+}
+
+.footer-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding-bottom: 2px;
+  transition: opacity 0.2s;
+}
+.footer-link:hover {
+  opacity: 0.8;
+}
+
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 30px;
+}
+
+.footer-links-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 15px 0;
+}
+
+.footer-links-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links-list li {
+  margin-bottom: 10px;
+}
+
+.footer-links-list a {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footer-links-list a:hover {
+  color: #fff;
+}
+
+.footer-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-author {
+    font-size: 14px;
+    margin-top: 10px;
+    color: #888;
+  }
+
+.social-links {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.social-link {
+  color: #fff;
+  transition: opacity 0.2s;
+}
+
+.social-link:hover {
+  opacity: 0.8;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .footer-content {
+    grid-template-columns: 1fr 2fr;
+  }
+
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .social-links {
+    margin-bottom: 0;
+  }
+}
+
