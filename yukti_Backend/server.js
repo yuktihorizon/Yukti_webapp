@@ -12,10 +12,32 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-app.use(cors({
-    credentials : true,
-    origin : process.env.FRONTEND_URL
-}))
+// Comma-separated FRONTEND_URL values, e.g. http://localhost:5173,http://localhost:5175
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+const isLocalDevOrigin = (origin) =>
+  /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || '');
+
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      if (!origin) {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      if (process.env.NODE_ENV !== 'production' && isLocalDevOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+  })
+);
 app.use(express.json());
 
 const setupRoutes = require('./routes');

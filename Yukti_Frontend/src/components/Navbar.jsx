@@ -4,7 +4,8 @@ import { useCart } from "../pages/CartContext";
 import { useSearch } from "../components/SearchContext";
 import "../styles/navbar.css";
 import Search from "../pages/Search";
-import logo from "../assets/yuktigold.png";
+// import logo from "../assets/yuktigold.png";
+import logoSecondary from "../assets/yuktiHindi.png";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -34,8 +35,8 @@ const Navbar = () => {
     <header className="site-header">
       <div className="header-container">
         <Link to="/" className="logo-container" onClick={handleLinkClick}>
-          <img src={logo} alt="Yukti Logo" className="logo" />
-          <span className="logo-text">Yukti</span>
+          {/* <img src={logo} alt="Yukti" className="logo" /> */}
+          <img src={logoSecondary} alt="" className="logo logo-secondary" aria-hidden="true" />
         </Link>
 
         {/* Mobile Hamburger Menu */}

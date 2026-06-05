@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/about.css'
 import Header from "../assets/Experiencestore.png"
-import image1 from "../assets/WhatsApp.jpeg";
+import weAreYuktiHero from "../assets/we-are-yukti-hero.png";
 import image2 from "../assets/image2.png";
 
 const About = () => {
@@ -47,13 +47,13 @@ const About = () => {
       <section className="we-are-section">
         <div className="we-are-container">
           <div className="we-are-image">
-          <img
-  src={image1}
-  alt="Yukti furniture in a minimalist setting"
-  width={600}
-  height={600}
-  className="furniture-image"
-/>
+            <img
+              src={weAreYuktiHero}
+              alt="Yukti brand logo"
+              width={800}
+              height={800}
+              className="furniture-image we-are-yukti-hero"
+            />
           </div>
           <div className="we-are-content">
             <h2>

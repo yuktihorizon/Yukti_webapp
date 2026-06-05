@@ -1,5 +1,6 @@
 import React from 'react';
-import logo from "../assets/whitelogo.png";
+// import logo from "../assets/whitelogo.png";
+import logoSecondary from "../assets/yuktiHindi.png";
 import { Link } from 'react-router-dom';
 import '../styles/footer.css';
 
@@ -10,8 +11,8 @@ function Footer() {
         <div className="footer-content">
           <div className="footer-brand">
             <div className="footer-logo">
-              <img src={logo} alt="Yukti" className="footer-logo-img" />
-              <span className="footer-logo-text">Yukti</span>
+              {/* <img src={logo} alt="Yukti" className="footer-logo-img" /> */}
+              <img src={logoSecondary} alt="" className="footer-logo-img footer-logo-img-secondary" aria-hidden="true" />
             </div>
             <p className="footer-tagline">
             खड्गेन आक्रम्य भुंजीत, वीर भोग्या वसुंधरा॥

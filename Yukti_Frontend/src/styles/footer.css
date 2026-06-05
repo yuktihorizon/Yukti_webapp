@@ -18,18 +18,19 @@
 .footer-logo {
   display: flex;
   align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
 }
 
 .footer-logo-img {
   height: 30px;
-  width: 30px;
-  margin-right: 10px;
+  width: auto;
+  object-fit: contain;
 }
 
-.footer-logo-text {
-  font-size: 1.5rem;
-  font-weight: 500;
+.footer-logo-img-secondary {
+  height: 72px;
+  max-width: 520px;
 }
 
 .footer-tagline {

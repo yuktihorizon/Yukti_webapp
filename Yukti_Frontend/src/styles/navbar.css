@@ -70,10 +70,10 @@
     width: auto;
 }
 
-.logo-text {
-    font-size: 24px;
-    color: white;
-    font-weight: 600;
+.logo-secondary {
+    height: 68px;
+    max-width: 360px;
+    object-fit: contain;
 }
 
 /* Header Actions */
@@ -227,9 +227,10 @@
     .logo {
         height: 40px;
     }
-    
-    .logo-text {
-        font-size: 20px;
+
+    .logo-secondary {
+        height: 58px;
+        max-width: 300px;
     }
     
     /* Show hamburger menu */
@@ -317,13 +318,14 @@
         padding: 0 8px;
         height: 56px;
     }
-    
+
     .logo {
-        height: 36px;
+        height: 54px;
     }
-    
-    .logo-text {
-        font-size: 18px;
+
+    .logo-secondary {
+        height: 52px;
+        max-width: 270px;
     }
     
     .nav-menu {
@@ -381,7 +383,8 @@
 
 /* High DPI displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .logo {
+    .logo,
+    .logo-secondary {
         image-rendering: -webkit-optimize-contrast;
         image-rendering: crisp-edges;
     }
