@@ -8,8 +8,5 @@ export default ({ mode }) => {
     server: {
       port: Number(env.VITE_PORT) || 5173,
     },
-    build: {
-      outDir: 'build',
-    },
   })
 }
