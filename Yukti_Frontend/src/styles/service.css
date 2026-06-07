@@ -304,9 +304,15 @@
   padding: 100px 20px;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Lathe / industrial photo behind form — keep dial & handles in frame */
+.service-form-section--lathe {
+  background-position: center 42%;
 }
 
 .service-form-overlay {

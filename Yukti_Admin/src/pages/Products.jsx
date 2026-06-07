@@ -11,6 +11,7 @@ export default function Products() {
     category: '',
     price: '',
     description: '',
+    backgroundVideoUrl: '',
     dimensionsDetails: '',
     width: '',
     height: '',
@@ -28,6 +29,7 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [editingId, setEditingId] = useState(null);
   const [currentImages, setCurrentImages] = useState([]);
+  const [backgroundVideoFile, setBackgroundVideoFile] = useState(null);
   const [customCategory, setCustomCategory] = useState('');
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [categoryMessage, setCategoryMessage] = useState({ type: '', text: '' });
@@ -64,6 +66,7 @@ export default function Products() {
       category: '',
       price: '',
       description: '',
+      backgroundVideoUrl: '',
       dimensionsDetails: '',
       width: '',
       height: '',
@@ -77,6 +80,7 @@ export default function Products() {
       assembly: '',
     });
     setImages([]);
+    setBackgroundVideoFile(null);
     setShowForm(false);
     setEditingId(null);
     setCurrentImages([]);
@@ -127,6 +131,10 @@ export default function Products() {
       fd.append('category', typeof form.category === 'object' ? form.category.name : form.category);
       fd.append('price', form.price);
       fd.append('description', form.description);
+      fd.append('backgroundVideoUrl', form.backgroundVideoUrl || '');
+      if (backgroundVideoFile) {
+        fd.append('backgroundVideo', backgroundVideoFile);
+      }
       fd.append(
         'dimensions',
         JSON.stringify({
@@ -428,6 +436,51 @@ export default function Products() {
               }}
               required
             />
+            <div style={{
+              border: '1px solid #e5e5e5',
+              borderRadius: '10px',
+              padding: '14px',
+              background: '#fafafa'
+            }}>
+              <h4 style={{ margin: '0 0 12px 0', color: '#222' }}>Product page background video</h4>
+              <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#555', lineHeight: 1.5 }}>
+                Paste a YouTube link or a direct video URL (e.g. Cloudinary). Shown full-screen behind the product.
+                Optional — chair products without a URL still use the default loop.
+              </p>
+              <label style={fieldLabelStyle} htmlFor="backgroundVideoUrl">Background video URL</label>
+              <input
+                id="backgroundVideoUrl"
+                name="backgroundVideoUrl"
+                placeholder="https://www.youtube.com/watch?v=… or https://…/video.mp4"
+                value={form.backgroundVideoUrl}
+                onChange={handleChange}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '15px',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <label style={{ ...fieldLabelStyle, marginTop: '12px' }} htmlFor="backgroundVideoFile">
+                Or upload a video file
+              </label>
+              <input
+                id="backgroundVideoFile"
+                type="file"
+                accept="video/*"
+                onChange={(e) => setBackgroundVideoFile(e.target.files?.[0] || null)}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
             <div style={{
               border: '1px solid #e5e5e5',
               borderRadius: '10px',
@@ -922,12 +975,14 @@ export default function Products() {
                     onClick={() => {
                       setEditingId(item._id);
                       setShowForm(true);
+                      setBackgroundVideoFile(null);
                       setForm({
                         name: item.name || '',
                         series: item.series || '',
                         category: typeof item.category === 'object' ? item.category.name : item.category || '',
                         price: item.price || '',
                         description: item.description || '',
+                        backgroundVideoUrl: item.backgroundVideoUrl || item.videoUrl || '',
                         dimensionsDetails: item.dimensions?.details || '',
                         width: item.dimensions?.width || '',
                         height: item.dimensions?.height || '',

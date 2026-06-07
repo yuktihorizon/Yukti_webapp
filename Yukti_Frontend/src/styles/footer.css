@@ -29,8 +29,8 @@
 }
 
 .footer-logo-img-secondary {
-  height: 72px;
-  max-width: 520px;
+  height: 280px;
+  max-width: min(100%, 1600px);
 }
 
 .footer-tagline {
@@ -120,6 +120,13 @@
   font-size: 0.8rem;
   color: #aaa;
   margin: 0;
+}
+
+@media (max-width: 480px) {
+  .footer-logo-img-secondary {
+    height: 200px;
+    max-width: min(100%, 720px);
+  }
 }
 
 @media (min-width: 768px) {

@@ -22,8 +22,12 @@ router.post('/login', adminLogin);
 router.post('/spotlight', requireAdmin, upload.fields([{ name: 'image', maxCount: 1 }, { name: 'media', maxCount: 1 }]), createSpotlight);
 router.delete('/spotlight/:id', requireAdmin, deleteSpotlight);
 
-router.post('/products', requireAdmin, upload.fields([{ name: 'images', maxCount: 5 }]), createProduct);
-router.put('/products/:id', requireAdmin, upload.fields([{ name: 'images', maxCount: 5 }]), updateProduct);
+const productUpload = upload.fields([
+  { name: 'images', maxCount: 5 },
+  { name: 'backgroundVideo', maxCount: 1 },
+]);
+router.post('/products', requireAdmin, productUpload, createProduct);
+router.put('/products/:id', requireAdmin, productUpload, updateProduct);
 router.delete('/products/:id', requireAdmin, deleteProduct);
 
 router.get('/contacts', requireAdmin, getContactMessages);

@@ -1,6 +1,6 @@
 import React from 'react';
 // import logo from "../assets/whitelogo.png";
-import logoSecondary from "../assets/yuktiHindi.png";
+import footerBrandLogo from "../assets/yuktiHorizonLogo.png";
 import { Link } from 'react-router-dom';
 import '../styles/footer.css';
 
@@ -12,7 +12,11 @@ function Footer() {
           <div className="footer-brand">
             <div className="footer-logo">
               {/* <img src={logo} alt="Yukti" className="footer-logo-img" /> */}
-              <img src={logoSecondary} alt="" className="footer-logo-img footer-logo-img-secondary" aria-hidden="true" />
+              <img
+                src={footerBrandLogo}
+                alt="Yukti Horizon"
+                className="footer-logo-img footer-logo-img-secondary"
+              />
             </div>
             <p className="footer-tagline">
             खड्गेन आक्रम्य भुंजीत, वीर भोग्या वसुंधरा॥
@@ -84,7 +88,12 @@ function Footer() {
 
         <div className="footer-bottom">
           <div className="social-links">
-            <a href="https://www.instagram.com/yukti_horizon?igsh=MzRmZGFsaWpvc2Vu&utm_source=qr" className="social-link">
+            <a
+              href="https://www.instagram.com/yukti_horizon?igsh=MzRmZGFsaWpvc2Vu&utm_source=qr"
+              className="social-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <svg
                 width="20"
                 height="20"
@@ -100,7 +109,12 @@ function Footer() {
                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
               </svg>
             </a>
-            <a href="https://www.facebook.com/profile.php?id=61576148707039" className="social-link">
+            <a
+              href="https://www.facebook.com/profile.php?id=61576148707039"
+              className="social-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <svg
                 width="20"
                 height="20"
@@ -114,7 +128,12 @@ function Footer() {
                 <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
               </svg>
             </a>
-            <a href="https://x.com/yuktihorizon?s=11" className="social-link">
+            <a
+              href="https://x.com/yuktihorizon?s=11"
+              className="social-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <svg
                 width="20"
                 height="20"

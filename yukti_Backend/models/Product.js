@@ -14,6 +14,8 @@ const productSchema = new mongoose.Schema({
   images: [String], 
   thumbnails: [String],
   videoUrl: String,
+  /** Full-page product detail background: YouTube URL or direct video URL (e.g. Cloudinary). */
+  backgroundVideoUrl: String,
   dimensions: {
     details: String,
     width: String,

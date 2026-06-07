@@ -96,13 +96,28 @@ const Contact = () => {
           </div>
 
           <div className="social-lins">
-            <a href="https://www.instagram.com/yukti_horizon?igsh=MzRmZGFsaWpvc2Vu&utm_source=qr" className="social-link">
+            <a
+              href="https://www.instagram.com/yukti_horizon?igsh=MzRmZGFsaWpvc2Vu&utm_source=qr"
+              className="social-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
             <span className="icon">Instagram &#8599;</span>
             </a>
-            <a href="https://www.facebook.com/profile.php?id=61576148707039" className="social-link">
+            <a
+              href="https://www.facebook.com/profile.php?id=61576148707039"
+              className="social-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <span className="icon">Facebook &#8599;</span>
             </a>
-            <a href="https://x.com/yuktihorizon?s=11" className="social-link">
+            <a
+              href="https://x.com/yuktihorizon?s=11"
+              className="social-link"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <span className="icon">Twitter &#8599;</span>
             </a>
           </div>

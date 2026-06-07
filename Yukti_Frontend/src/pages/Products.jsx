@@ -56,6 +56,11 @@ const Products = () => {
     return 0
   })
 
+  const categoryLabel = (product) => {
+    if (!product?.category) return ""
+    return typeof product.category === "object" ? product.category.name : String(product.category)
+  }
+
   return (
     <div className="shop-page">
       {Array.isArray(cartItems) && cartItems.length > 0 && (
@@ -65,27 +70,41 @@ const Products = () => {
       )}
 
       <div className="shop-hero">
-        <h1 className="shop-title">Our Collection</h1>
+        <p className="shop-eyebrow">Shop</p>
+        <h1 className="shop-title">Our collection</h1>
+        {!loading && (
+          <p className="shop-subtitle">
+            {sortedProducts.length} {sortedProducts.length === 1 ? "piece" : "pieces"} curated for workspace and home —
+            filter by category or sort by price.
+          </p>
+        )}
       </div>
 
       <div className="shop-container">
         <div className="shop-toolbar">
-          <div className="category-filter">
-            <button
-              className={activeCategory === "all" ? "active" : ""}
-              onClick={() => handleCategoryClick("all")}
-            >
-              All
-            </button>
-            {categories.map((category) => (
+          <div className="shop-toolbar-left">
+            <div className="category-filter">
               <button
-                key={category._id}
-                className={activeCategory === category._id ? "active" : ""}
-                onClick={() => handleCategoryClick(category._id)}
+                className={activeCategory === "all" ? "active" : ""}
+                onClick={() => handleCategoryClick("all")}
               >
-                {category.name}
+                All
               </button>
-            ))}
+              {categories.map((category) => (
+                <button
+                  key={category._id}
+                  className={activeCategory === category._id ? "active" : ""}
+                  onClick={() => handleCategoryClick(category._id)}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+            {!loading && sortedProducts.length > 0 && (
+              <span className="shop-result-count" aria-live="polite">
+                Showing {sortedProducts.length} of {products.length} products
+              </span>
+            )}
           </div>
 
           <div className="sort-container">
@@ -114,10 +133,20 @@ const Products = () => {
                     alt={product.name}
                     className="product-image"
                   />
+                  {categoryLabel(product) && (
+                    <span className="product-card-badge">{categoryLabel(product)}</span>
+                  )}
                 </div>
                 <div className="product-info">
+                  {product.series && <p className="product-series">{product.series}</p>}
                   <h3 className="product-name">{product.name}</h3>
-                  <p className="product-price">&#8377; {product.price?.toLocaleString('en-IN')}</p>
+                  {product.description && (
+                    <p className="product-card-excerpt">{product.description}</p>
+                  )}
+                  <div className="product-card-footer">
+                    <p className="product-price">&#8377; {product.price?.toLocaleString("en-IN")}</p>
+                    <span className="product-card-cta">View details</span>
+                  </div>
                 </div>
               </Link>
             ))}

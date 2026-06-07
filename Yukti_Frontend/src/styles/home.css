@@ -131,7 +131,7 @@
     align-items: center;
     width: 100%;
     max-width: 1200px;
-    margin-bottom: 40%;
+    margin-bottom: 2rem;
     box-sizing: border-box;
     padding-inline: 12px;
     /* Space between the three columns (always visible) */
@@ -165,6 +165,9 @@
 
 .hero-buttons__link .shop-button {
     margin: 0;
+    padding: 8px 18px;
+    font-size: 14px;
+    border-radius: 20px;
 }
 
 @media (max-width: 640px) {
@@ -187,7 +190,7 @@
 
     .hero-buttons__link .shop-button {
         width: 100%;
-        max-width: 280px;
+        max-width: 220px;
     }
 }
 
@@ -216,6 +219,11 @@
       padding: 10px 20px;
       font-size: 14px;
     }
+
+    .hero-buttons__link .shop-button {
+      padding: 7px 16px;
+      font-size: 13px;
+    }
   }
   
   @media (max-width: 480px) {
@@ -224,6 +232,11 @@
       font-size: 13px;
       /* width: 100%; */
       text-align: center;
+    }
+
+    .hero-buttons__link .shop-button {
+      padding: 6px 14px;
+      font-size: 12px;
     }
   }
   

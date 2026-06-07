@@ -6,6 +6,28 @@ import { useCart } from "../pages/CartContext";
 import { toast } from "react-toastify";
 import chairsVideo from "../assets/chairvideo.mp4";
 
+/** YouTube embed URL with autoplay, or null if not a recognized YouTube link. */
+function getYouTubeEmbedSrc(raw) {
+  if (!raw || typeof raw !== "string") return null;
+  const url = raw.trim();
+  if (!url) return null;
+  let videoId = null;
+  try {
+    if (/youtu\.be\//i.test(url)) {
+      videoId = url.split(/youtu\.be\//i)[1]?.split(/[?&#/]/)[0];
+    } else if (/youtube\.com\/embed\//i.test(url)) {
+      videoId = url.split(/embed\//i)[1]?.split(/[?&#/]/)[0];
+    } else {
+      const u = new URL(/^https?:\/\//i.test(url) ? url : `https://${url}`);
+      videoId = u.searchParams.get("v");
+    }
+  } catch {
+    return null;
+  }
+  if (!videoId || !/^[a-zA-Z0-9_-]{6,}$/.test(videoId)) return null;
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}`;
+}
+
 const ProductDetail = () => {
   const { id: productId } = useParams();
   const navigate = useNavigate();
@@ -96,10 +118,34 @@ const ProductDetail = () => {
     return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(price);
   };
 
+  const heroVideoUrl = String(product.backgroundVideoUrl || product.videoUrl || "").trim();
+  const youtubeHeroSrc = heroVideoUrl ? getYouTubeEmbedSrc(heroVideoUrl) : null;
+
   return (
     <div className="product-page-wrapper">
-      {/* Fullscreen background video per category */}
-      {isChairsCategory ? (
+      {/* Fullscreen background: admin URL (YouTube or file), else legacy videoUrl, else default chairs clip */}
+      {youtubeHeroSrc ? (
+        <div className="youtube-video-background">
+          <iframe
+            src={youtubeHeroSrc}
+            title="Product background"
+            frameBorder="0"
+            allow="autoplay; fullscreen"
+            allowFullScreen
+          />
+        </div>
+      ) : heroVideoUrl ? (
+        <div className="youtube-video-background">
+          <video
+            className="background-video"
+            src={heroVideoUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        </div>
+      ) : isChairsCategory ? (
         <div className="youtube-video-background">
           <video
             className="background-video"
@@ -110,42 +156,9 @@ const ProductDetail = () => {
             playsInline
           />
         </div>
-      ) : (
-        product.videoUrl && (
-          <div className="youtube-video-background">
-            <iframe
-              src={`https://www.youtube.com/embed/${new URL(
-                product.videoUrl.trim()
-              ).searchParams.get("v")}?autoplay=1&mute=1&loop=1&playlist=${new URL(
-                product.videoUrl.trim()
-              ).searchParams.get("v")}`}
-              frameBorder="0"
-              allow="autoplay; fullscreen"
-              allowFullScreen
-            >
-              Play Video
-            </iframe>
-          </div>
-        )
-      )}
+      ) : null}
     <div className="product-container">
       <div className="product-left">
-        {/* Video Button */}
-        {product.videoUrl && (
-  <div className="background-video-container">
-    <video
-      className="background-video"
-      src={product.videoUrl.trim()}
-      autoPlay
-      muted
-      loop
-      playsInline
-    />
-  </div>
-)}
-
-    
-
         {/* Title */}
         <div className="product-title">
           <h2>{product.series}</h2>
@@ -154,8 +167,6 @@ const ProductDetail = () => {
 
         {/* Description */}
         <p className="product-description">{product.description}</p>
-
-        <button className="buy-now-btn">Buy Now</button>
 
         <div className="main-image-container">
           <div className="main-image-wrapper">
@@ -310,21 +321,23 @@ const ProductDetail = () => {
     {showImageModal && (
       <div className="image-modal-overlay" onClick={() => setShowImageModal(false)}>
         <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
-          <button 
-            className="modal-close-btn"
-            onClick={() => setShowImageModal(false)}
-            aria-label="Close modal"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-          <img 
-            src={mainImage} 
-            alt={product.name}
-            className="modal-image"
-          />
+          <div className="modal-image-wrapper">
+            <button 
+              className="modal-close-btn"
+              onClick={() => setShowImageModal(false)}
+              aria-label="Close modal"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <img 
+              src={mainImage} 
+              alt={product.name}
+              className="modal-image"
+            />
+          </div>
           {productImages.length > 1 && (
             <>
               <button

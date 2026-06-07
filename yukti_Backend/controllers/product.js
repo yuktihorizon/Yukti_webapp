@@ -16,11 +16,24 @@ const uploadToCloudinary = (buffer, folder) => {
   });
 };
 
+const uploadVideoToCloudinary = (buffer, folder) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { resource_type: 'video', folder },
+      (error, result) => {
+        if (result) resolve(result.secure_url);
+        else reject(error);
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
+
 exports.createProduct = async (req, res) => {
   try {
     const {
       name, series, description, category, price,
-      colors, videoUrl, dimensions, specifications
+      colors, videoUrl, backgroundVideoUrl, dimensions, specifications
     } = req.body;
 
     const foundCategory = await Category.findOne({ name: category.trim() });
@@ -69,6 +82,13 @@ exports.createProduct = async (req, res) => {
       parsedSpecifications = {};
     }
 
+    let resolvedBackgroundVideoUrl =
+      typeof backgroundVideoUrl === 'string' ? backgroundVideoUrl.trim() : '';
+    const bgFile = req.files && req.files.backgroundVideo && req.files.backgroundVideo[0];
+    if (bgFile && bgFile.buffer) {
+      resolvedBackgroundVideoUrl = await uploadVideoToCloudinary(bgFile.buffer, 'products/videos');
+    }
+
     const newProduct = new Product({
       name,
       series,
@@ -77,6 +97,7 @@ exports.createProduct = async (req, res) => {
       price,
       colors: parsedColors,
       videoUrl,
+      backgroundVideoUrl: resolvedBackgroundVideoUrl || undefined,
       dimensions: parsedDimensions,
       specifications: parsedSpecifications,
       images
@@ -134,6 +155,7 @@ exports.updateProduct = async (req, res) => {
       price,
       colors,
       videoUrl,
+      backgroundVideoUrl,
       dimensions,
       specifications,
       imagesOrder,
@@ -157,6 +179,13 @@ exports.updateProduct = async (req, res) => {
     if (typeof description === 'string') product.description = description;
     if (typeof price !== 'undefined') product.price = price;
     if (typeof videoUrl === 'string') product.videoUrl = videoUrl;
+
+    const bgFile = req.files && req.files.backgroundVideo && req.files.backgroundVideo[0];
+    if (bgFile && bgFile.buffer) {
+      product.backgroundVideoUrl = await uploadVideoToCloudinary(bgFile.buffer, 'products/videos');
+    } else if (typeof backgroundVideoUrl === 'string') {
+      product.backgroundVideoUrl = backgroundVideoUrl.trim();
+    }
 
     // colors
     if (colors) {

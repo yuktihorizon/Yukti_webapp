@@ -5,6 +5,7 @@ import SuccessToast from '../components/SuccessToast';
 import ErrorToast from '../components/ErrorToast';
 import 'react-toastify/dist/ReactToastify.css';
 import servicesCoverHero from '../assets/services-cover-hero.png';
+import serviceFormBgLathe from '../assets/service-form-bg-lathe.png';
 import latheImg1 from '../assets/store1.png';
 import latheImg2 from '../assets/store2.png';
 import protoImg1 from '../assets/store3.png';
@@ -172,8 +173,8 @@ export default function Service() {
       ))}
 
       <section
-        className="service-form-section"
-        style={{ backgroundImage: `url(${servicesCoverHero})` }}
+        className="service-form-section service-form-section--lathe"
+        style={{ backgroundImage: `url(${serviceFormBgLathe})` }}
       >
         <div className="service-form-overlay" />
         <div className="service-form-container">
