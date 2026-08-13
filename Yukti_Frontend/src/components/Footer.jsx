@@ -25,65 +25,6 @@ function Footer() {
               Shop Now
             </a> */}
           </div>
-
-          <div className="footer-links">
-            <div className="footer-links-column">
-              <h3 className="footer-links-title">About</h3>
-              <ul className="footer-links-list">
-                <li>
-                  <Link to="/about" className="footer-link">Our Story</Link> 
-                </li>
-                {/* <li>
-                  <a href="#team">Team</a>
-                </li>
-                <li>
-                  <a href="#careers">Careers</a>
-                </li>
-                <li>
-                  <a href="#locations">Locations</a>
-                </li>
-                <li>
-                  <a href="#sustainability">Sustainability</a>
-                </li> */}
-              </ul>
-            </div>
-
-            {/* <div className="footer-links-column">
-              <h3 className="footer-links-title">Policies</h3>
-              <ul className="footer-links-list">
-                <li>
-                  <a href="#shipping">Shipping</a>
-                </li>
-                <li>
-                  <a href="#returns">Returns</a>
-                </li>
-                <li>
-                  <a href="#warranty">Warranty</a>
-                </li>
-                <li>
-                  <a href="#privacy">Privacy</a>
-                </li>
-                <li>
-                  <a href="#terms">Terms of Use</a>
-                </li>
-              </ul>
-            </div> */}
-
-            <div className="footer-links-column">
-              <h3 className="footer-links-title">Support</h3>
-              <ul className="footer-links-list">
-                {/* <li>
-                  <a href="#faq">FAQ</a>
-                </li> */}
-                 <li>
-                <Link to="/contactus" className="footer-link">Contact Us</Link> 
-                </li>
-                {/* <li>
-                  <a href="#care">Care Guide</a>
-                </li> */}
-              </ul>
-            </div>
-          </div>
         </div>
 
         <div className="footer-bottom">
@@ -148,7 +89,28 @@ function Footer() {
               </svg>
             </a>
           </div>
-          <p className="copyright">© {new Date().getFullYear()} Yukti. All rights reserved.</p>
+          <div className="footer-bottom-right">
+            <div className="footer-links">
+              <div className="footer-links-column">
+                <h3 className="footer-links-title">About</h3>
+                <ul className="footer-links-list">
+                  <li>
+                    <Link to="/about" className="footer-link">Our Story</Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="footer-links-column">
+                <h3 className="footer-links-title">Support</h3>
+                <ul className="footer-links-list">
+                  <li>
+                    <Link to="/contactus" className="footer-link">Contact Us</Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <p className="copyright">© {new Date().getFullYear()} Yukti. All rights reserved.</p>
+          </div>
         </div>
       </div>
     </footer>

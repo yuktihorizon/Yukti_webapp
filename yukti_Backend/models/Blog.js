@@ -18,6 +18,11 @@ const blogSchema = new mongoose.Schema({
   // Presentations
   coverText: { type: String, default: '' },
   slides: [{ type: String }],
+  /** Ordered blocks from Word import — used by Articles (and Presentations) */
+  slideItems: [{
+    type: { type: String, enum: ['image', 'text'] },
+    content: { type: String },
+  }],
   createdAt: { type: Date, default: Date.now },
 });
 

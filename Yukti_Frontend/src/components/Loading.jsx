@@ -1,17 +1,25 @@
 import "../styles/loading.css";
 
-export default function Loading({ fullScreen = false }) {
+export default function Loading({ fullScreen = false, onFinish }) {
+  const handleVideoEnd = () => {
+    if (fullScreen && onFinish) onFinish();
+  };
+
   return (
     <div className={`loading-overlay ${fullScreen ? "loading-fullscreen" : ""}`}>
       <div className="loading-video-wrap">
         <video
           className="loading-video"
           autoPlay
-          loop
           muted
           playsInline
+          loop={!fullScreen}
+          onEnded={fullScreen ? handleVideoEnd : undefined}
         >
-          <source src="/loading.mp4" type="video/mp4" />
+          {/* VP9 + alpha — Chrome / Firefox / Edge */}
+          <source src="/loading-transparent.webm" type="video/webm" />
+          {/* HEVC + alpha — Safari / iOS */}
+          <source src="/loading-transparent.mov" type='video/mp4; codecs="hvc1"' />
         </video>
       </div>
     </div>

@@ -217,35 +217,41 @@ export default function CheckoutPage() {
         <h2>Contact</h2>
         <input 
           type="email" 
-          placeholder="Email" 
+          placeholder="Email *" 
           name="email"
           value={formData.email}
           onChange={handleInputChange}
+          required
         />
 
         <h2>Delivery</h2>
         <div className="name-row">
           <input 
             type="text" 
-            placeholder="First Name" 
+            placeholder="First Name *" 
             name="firstName"
             value={formData.firstName}
             onChange={handleInputChange}
+            required
+            minLength={2}
           />
           <input 
             type="text" 
-            placeholder="Last Name" 
+            placeholder="Last Name *" 
             name="lastName"
             value={formData.lastName}
             onChange={handleInputChange}
+            required
+            minLength={2}
           />
         </div>
         <input 
           type="text" 
-          placeholder="Address" 
+          placeholder="Address *" 
           name="address"
           value={formData.address}
           onChange={handleInputChange}
+          required
         />
         <input 
           type="text" 
@@ -264,7 +270,7 @@ export default function CheckoutPage() {
             disabled={loadingStates}
           >
             <option value="">
-              {loadingStates ? 'Loading states...' : 'Select State'}
+              {loadingStates ? 'Loading states...' : 'Select State *'}
             </option>
             {states.map((state) => (
               <option key={state} value={state}>
@@ -280,7 +286,7 @@ export default function CheckoutPage() {
             disabled={!formData.state || loadingCities}
           >
             <option value="">
-              {loadingCities ? 'Loading cities...' : 'Select City'}
+              {loadingCities ? 'Loading cities...' : 'Select City *'}
             </option>
             {cities.map((city) => (
               <option key={city} value={city}>
@@ -290,18 +296,21 @@ export default function CheckoutPage() {
           </select>
           <input 
             type="text" 
-            placeholder="Zip code" 
+            placeholder="Zip code *" 
             name="zipCode"
             value={formData.zipCode}
             onChange={handleInputChange}
+            required
           />
         </div>
         <input 
           type="tel" 
-          placeholder="Phone" 
+          placeholder="Phone *" 
           name="phone"
           value={formData.phone}
           onChange={handleInputChange}
+          required
+          minLength={8}
         />
 
         <button 
@@ -320,7 +329,7 @@ export default function CheckoutPage() {
             <img src={item.images?.[0] || item.image} alt={item.name} />
             <div>
               <p><strong>{item.name}</strong></p>
-              <p>Rs. {item.price.toLocaleString()} × {item.quantity}</p>
+              <p>Rs. {item.price.toLocaleString()} <span className="price-gst">(GST inc.)</span> × {item.quantity}</p>
             </div>
           </div>
         ))}

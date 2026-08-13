@@ -28,6 +28,42 @@ function getYouTubeEmbedSrc(raw) {
   return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}`;
 }
 
+const LEGACY_LABELS = {
+  width: "Width",
+  height: "Height",
+  depth: "Depth",
+  seatHeight: "Seat Height",
+  material: "Material",
+  frame: "Frame",
+  padding: "Padding",
+  weightCapacity: "Weight Capacity",
+  assembly: "Assembly",
+};
+
+const normalizeProductAttributes = (data, formatFieldLabel) => {
+  if (!data) return [];
+
+  if (Array.isArray(data)) {
+    return data
+      .map((item) => ({
+        label: String(item?.label || "").trim(),
+        value: String(item?.value || "").trim(),
+      }))
+      .filter((item) => item.label && item.value);
+  }
+
+  if (typeof data === "object") {
+    return Object.entries(data)
+      .filter(([key, val]) => key.toLowerCase() !== "details" && val != null && String(val).trim())
+      .map(([key, val]) => ({
+        label: LEGACY_LABELS[key] || formatFieldLabel(key),
+        value: String(val).trim(),
+      }));
+  }
+
+  return [];
+};
+
 const ProductDetail = () => {
   const { id: productId } = useParams();
   const navigate = useNavigate();
@@ -120,6 +156,13 @@ const ProductDetail = () => {
 
   const heroVideoUrl = String(product.backgroundVideoUrl || product.videoUrl || "").trim();
   const youtubeHeroSrc = heroVideoUrl ? getYouTubeEmbedSrc(heroVideoUrl) : null;
+  const isIndustrialProduct =
+    typeof product.category === "object" &&
+    product.category?.mainCategory === "Industrial Products";
+  const dimensionEntries = isIndustrialProduct
+    ? []
+    : normalizeProductAttributes(product.dimensions, formatFieldLabel);
+  const specificationEntries = normalizeProductAttributes(product.specifications, formatFieldLabel);
 
   return (
     <div className="product-page-wrapper">
@@ -225,7 +268,10 @@ const ProductDetail = () => {
       <div className="product-right">
         {/* Price */}
         <div className="price-section">
-          <h2>{formatPrice(product.price)}</h2>
+          <h2>
+            {formatPrice(product.price)}{" "}
+            <span className="price-gst">(GST inc.)</span>
+          </h2>
         </div>
 
         {/* Colors */}
@@ -244,8 +290,10 @@ const ProductDetail = () => {
           </div>
         )}
 
-        {/* Accordions: you can display dimensions and specifications */}
+        {/* Accordions: dimensions and specifications with per-product sub-headings */}
+        {(dimensionEntries.length > 0 || specificationEntries.length > 0) && (
         <div className="accordion-sections">
+          {dimensionEntries.length > 0 && (
           <div className="accordion-item">
             <div className="accordion-header" onClick={() => toggleSection("Dimensions")}>
               <h3>Dimensions</h3>
@@ -262,16 +310,18 @@ const ProductDetail = () => {
             {expandedSection === "Dimensions" && (
               <div className="accordion-content">
                 <ul>
-                  {Object.entries(product.dimensions || {}).map(([key, val]) => (
-                    <li key={key}>
-                      <b>{formatFieldLabel(key)}:</b> {String(val)}
+                  {dimensionEntries.map((entry, index) => (
+                    <li key={`dimension-${index}-${entry.label}`}>
+                      <b>{entry.label}:</b> {entry.value}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
           </div>
+          )}
 
+          {specificationEntries.length > 0 && (
           <div className="accordion-item">
             <div className="accordion-header" onClick={() => toggleSection("Specifications")}>
               <h3>Specifications</h3>
@@ -288,16 +338,18 @@ const ProductDetail = () => {
             {expandedSection === "Specifications" && (
               <div className="accordion-content">
                 <ul>
-                  {Object.entries(product.specifications || {}).map(([key, val]) => (
-                    <li key={key}>
-                      <b>{formatFieldLabel(key)}:</b> {String(val)}
+                  {specificationEntries.map((entry, index) => (
+                    <li key={`specification-${index}-${entry.label}`}>
+                      <b>{entry.label}:</b> {entry.value}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
           </div>
+          )}
         </div>
+        )}
 
       <button
   className="add-to-cart-btn"

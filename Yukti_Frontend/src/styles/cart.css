@@ -69,6 +69,13 @@
   .cart-price {
     font-weight: 500;
   }
+
+  .price-gst {
+    font-size: 0.78em;
+    font-weight: 400;
+    opacity: 0.75;
+    white-space: nowrap;
+  }
   
   .cart-quantity {
     display: flex;

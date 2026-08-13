@@ -75,9 +75,10 @@
     width: auto;
 }
 
-.logo-secondary {
-    height: 98px;
-    max-width: 360px;
+.logo-horizon {
+    height: 40px;
+    max-width: min(280px, 48vw);
+    width: auto;
     object-fit: contain;
 }
 
@@ -233,9 +234,9 @@
         height: 40px;
     }
 
-    .logo-secondary {
-        height: 58px;
-        max-width: 300px;
+    .logo-horizon {
+        height: 32px;
+        max-width: min(220px, 52vw);
     }
     
     /* Show hamburger menu */
@@ -328,9 +329,9 @@
         height: 54px;
     }
 
-    .logo-secondary {
-        height: 52px;
-        max-width: 270px;
+    .logo-horizon {
+        height: 28px;
+        max-width: min(190px, 55vw);
     }
     
     .nav-menu {
@@ -389,7 +390,7 @@
 /* High DPI displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
     .logo,
-    .logo-secondary {
+    .logo-horizon {
         image-rendering: -webkit-optimize-contrast;
         image-rendering: crisp-edges;
     }

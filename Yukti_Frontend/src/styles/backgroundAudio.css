@@ -1,0 +1,168 @@
+.bg-audio-element {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.bg-audio-fab {
+  position: fixed;
+  right: 22px;
+  bottom: 24px;
+  z-index: 9998;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.bg-audio-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+}
+
+.bg-audio-fab:active {
+  transform: scale(0.96);
+}
+
+.bg-audio-fab.is-off {
+  background: #fff;
+  color: #111;
+  border: 1.5px solid #111;
+}
+
+.bg-audio-fab.is-on {
+  background: #111;
+  color: #fff;
+}
+
+.bg-audio-fab__icon {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+
+.bg-audio-fab__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bg-audio-fab.is-off .bg-audio-fab__ring {
+  animation: bg-audio-pulse 2.2s ease-out infinite;
+}
+
+.bg-audio-fab.is-off .bg-audio-fab__ring--delay {
+  animation-delay: 1.1s;
+}
+
+.bg-audio-fab__hint {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  animation: bg-audio-hint 2.8s ease-in-out infinite;
+}
+
+.bg-audio-fab__hint::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: #111;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.bg-audio-fab__eq {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  z-index: 3;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #111;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 3px 3px;
+  box-sizing: border-box;
+}
+
+.bg-audio-fab__eq i {
+  display: block;
+  width: 2px;
+  border-radius: 2px;
+  background: #111;
+  animation: bg-audio-eq 0.9s ease-in-out infinite;
+}
+
+.bg-audio-fab__eq i:nth-child(1) { height: 6px; animation-delay: 0s; }
+.bg-audio-fab__eq i:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+.bg-audio-fab__eq i:nth-child(3) { height: 7px; animation-delay: 0.3s; }
+.bg-audio-fab__eq i:nth-child(4) { height: 9px; animation-delay: 0.45s; }
+
+@keyframes bg-audio-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+@keyframes bg-audio-hint {
+  0%, 100% { opacity: 0.88; transform: translateY(-50%) translateX(0); }
+  50% { opacity: 1; transform: translateY(-50%) translateX(-4px); }
+}
+
+@keyframes bg-audio-eq {
+  0%, 100% { transform: scaleY(0.45); }
+  50% { transform: scaleY(1); }
+}
+
+@media (max-width: 640px) {
+  .bg-audio-fab {
+    right: 14px;
+    bottom: 16px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .bg-audio-fab__hint {
+    display: none;
+  }
+}

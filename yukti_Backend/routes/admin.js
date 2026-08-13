@@ -9,7 +9,7 @@ const {
   getServicePageAdmin,
   updateServicePage,
 } = require('../controllers/servicePage');
-const { createBlog, updateBlog, deleteBlog } = require('../controllers/blog');
+const { createBlog, updateBlog, deleteBlog, importDocx } = require('../controllers/blog');
 const requireAdmin = require('../middlewares/requireAdmin');
 
 const router = express.Router();
@@ -41,8 +41,13 @@ const blogUpload = upload.fields([
   { name: 'file', maxCount: 3 },
   { name: 'images', maxCount: 40 },
   { name: 'slides', maxCount: 60 },
+  { name: 'docx', maxCount: 1 },
 ]);
 router.post('/blog', requireAdmin, blogUpload, createBlog);
+router.post('/blog/import-docx', requireAdmin, upload.fields([
+  { name: 'docx', maxCount: 1 },
+  { name: 'image', maxCount: 1 },
+]), importDocx);
 router.put('/blog/:id', requireAdmin, blogUpload, updateBlog);
 router.delete('/blog/:id', requireAdmin, deleteBlog);
 

@@ -8,15 +8,22 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+const SERVICE_TYPES = [
+  'Lathe/Turning',
+  'Product Prototyping',
+  'Digital Products',
+  'General Enquiry',
+];
+
 const Contact = () => {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     phone: "",
-    subject: "General Inquiry",
-    message: "",
+    serviceType: "",
+    additionalNote: "",
   })
+  const [submitting, setSubmitting] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -28,43 +35,75 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-  
+
+    if (
+      !formData.name.trim() ||
+      !formData.email.trim() ||
+      !formData.phone.trim() ||
+      !formData.serviceType ||
+      !formData.additionalNote.trim()
+    ) {
+      toast(<ErrorToast message="Please fill in all required fields." />, {
+        position: "top-right",
+        autoClose: 4000,
+      })
+      return
+    }
+
+    if (!API_BASE_URL) {
+      toast(<ErrorToast message="Form is not configured. Please try again later." />, {
+        position: "top-right",
+        autoClose: 4000,
+      })
+      return
+    }
+
+    setSubmitting(true)
     try {
       const response = await fetch(`${API_BASE_URL}/contact/createmessages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          firstName: formData.name.trim(),
+          lastName: '',
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          subject: 'Contact Us - Project Request',
+          message: [
+            'Source: Contact Us page',
+            `Service Type: ${formData.serviceType}`,
+            `Additional Note: ${formData.additionalNote.trim()}`,
+          ].join('\n'),
+        }),
       })
-  
+
       if (!response.ok) {
         throw new Error('Failed to send message')
       }
-  
-      const result = await response.json()
-      console.log('Success:', result)
-      toast(<SuccessToast message="Message sent successfully!" />, {
-  position: "top-right",
-  autoClose: 4000,
-});
+
+      toast(<SuccessToast message="Project request submitted!" />, {
+        position: "top-right",
+        autoClose: 4000,
+      })
       setFormData({
-        firstName: "",
-        lastName: "",
+        name: "",
         email: "",
         phone: "",
-        subject: "General Inquiry",
-        message: "",
+        serviceType: "",
+        additionalNote: "",
       })
     } catch (error) {
       console.error('Error:', error)
-      toast(<ErrorToast message="Failed to send message. Please try again later." />, {
-  position: "top-right",
-  autoClose: 4000,
-});
+      toast(<ErrorToast message="Failed to submit. Please try again later." />, {
+        position: "top-right",
+        autoClose: 4000,
+      })
+    } finally {
+      setSubmitting(false)
     }
   }
-  
 
   return (
     <div className={`contact-page className}`}>
@@ -79,7 +118,6 @@ const Contact = () => {
           <h1 className="main-heading">GET IN</h1>
           <h1 className="main-heading touch">TOUCH!</h1>
         </div>
-        {/* <div className="chair-image"></div> */}
       </div>
 
       <div className="bottom-section">
@@ -87,10 +125,6 @@ const Contact = () => {
           <h2 className="lets-talk">LETS TALK!</h2>
 
           <div className="contact-info">
-            {/* <p>123 Style Avenue,</p>
-            <p>City Heights,</p>
-            <p>Delhi - 450789</p>
-            <p>India</p> */}
             <p className="phone">8130507753</p>
             <p className="email">yuktihorizon@gmail.com</p>
           </div>
@@ -132,26 +166,33 @@ const Contact = () => {
         </div>
 
         <div className="contact-form-container">
+          <div className="contact-form-heading">
+            <h3>Start your project with clarity</h3>
+            <p>From shaping to validation—handled end-to-end</p>
+          </div>
           <form onSubmit={handleSubmit} className="contact-form">
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="firstName">First Name</label>
+                <label htmlFor="contact-name">Name *</label>
                 <input
                   type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
+                  id="contact-name"
+                  name="name"
+                  placeholder="Enter your name"
+                  value={formData.name}
                   onChange={handleChange}
                   required
+                  minLength={2}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="lastName">Last Name</label>
+                <label htmlFor="contact-email">Email *</label>
                 <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
+                  type="email"
+                  id="contact-email"
+                  name="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
                   onChange={handleChange}
                   required
                 />
@@ -160,68 +201,53 @@ const Contact = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required />
+                <label htmlFor="contact-phone">Contact Number *</label>
+                <input
+                  type="tel"
+                  id="contact-phone"
+                  name="phone"
+                  placeholder="Enter your contact number"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  minLength={8}
+                />
               </div>
               <div className="form-group">
-                <label htmlFor="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleChange} />
-              </div>
-            </div>
-
-            <div className="form-group subject-group">
-              <label>Select Subject?</label>
-              <div className="radio-options">
-                <div className="radio-option">
-                  <input
-                    type="radio"
-                    id="general"
-                    name="subject"
-                    value="General Inquiry"
-                    checked={formData.subject === "General Inquiry"}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="general">General Inquiry</label>
-                </div>
-                <div className="radio-option">
-                  <input
-                    type="radio"
-                    id="order"
-                    name="subject"
-                    value="Order Inquiry"
-                    checked={formData.subject === "Order Inquiry"}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="order">Order Inquiry</label>
-                </div>
-                <div className="radio-option">
-                  <input
-                    type="radio"
-                    id="support"
-                    name="subject"
-                    value="Support"
-                    checked={formData.subject === "Support"}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor="support">Custom Product Inquiry</label>
-                </div>
+                <label htmlFor="contact-serviceType">Service Type *</label>
+                <select
+                  id="contact-serviceType"
+                  name="serviceType"
+                  value={formData.serviceType}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select a service</option>
+                  {SERVICE_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="message">Message</label>
+              <label htmlFor="contact-additionalNote">Additional Note *</label>
               <textarea
-                id="message"
-                name="message"
-                placeholder="Write your message..."
-                value={formData.message}
+                id="contact-additionalNote"
+                name="additionalNote"
+                placeholder="Share any project details or requirements"
+                value={formData.additionalNote}
                 onChange={handleChange}
+                rows={4}
                 required
-              ></textarea>
+                minLength={5}
+              />
             </div>
 
-            <button type="submit" className="submit-button">
-              Send Message
+            <button type="submit" className="submit-button" disabled={submitting}>
+              {submitting ? "Sending..." : "Submit Project Request"}
             </button>
           </form>
         </div>
@@ -236,7 +262,6 @@ const Contact = () => {
       />
     </div>
   )
-  
 }
 
 export default Contact;

@@ -1,6 +1,136 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 
+const MAIN_CATEGORIES = [
+  'Consumer Products',
+  'Industrial Products',
+  'Industrial Services',
+  'Digital Products',
+];
+
+/** Flat mains: no sub-categories or dimensions (products sit directly under the main). */
+const FLAT_MAIN_CATEGORIES = ['Industrial Products'];
+const isFlatMainCategory = (main) => FLAT_MAIN_CATEGORIES.includes(main);
+
+const EMPTY_ATTRIBUTE_ROW = { label: '', value: '' };
+
+const LEGACY_LABELS = {
+  width: 'Width',
+  height: 'Height',
+  depth: 'Depth',
+  seatHeight: 'Seat Height',
+  material: 'Material',
+  frame: 'Frame',
+  padding: 'Padding',
+  weightCapacity: 'Weight Capacity',
+  assembly: 'Assembly',
+};
+
+const formatLegacyKey = (rawKey) => {
+  if (!rawKey || typeof rawKey !== 'string') return '';
+  const spaced = rawKey
+    .replace(/_/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .trim();
+  return spaced
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+const attributesToRows = (data) => {
+  if (!data) return [{ ...EMPTY_ATTRIBUTE_ROW }];
+
+  if (Array.isArray(data)) {
+    const rows = data
+      .filter((item) => item?.label || item?.value)
+      .map((item) => ({ label: item.label || '', value: item.value || '' }));
+    return rows.length ? rows : [{ ...EMPTY_ATTRIBUTE_ROW }];
+  }
+
+  if (typeof data === 'object') {
+    const rows = Object.entries(data)
+      .filter(([key, val]) => key.toLowerCase() !== 'details' && val != null && String(val).trim())
+      .map(([key, val]) => ({
+        label: LEGACY_LABELS[key] || formatLegacyKey(key),
+        value: String(val),
+      }));
+    return rows.length ? rows : [{ ...EMPTY_ATTRIBUTE_ROW }];
+  }
+
+  return [{ ...EMPTY_ATTRIBUTE_ROW }];
+};
+
+const rowsToPayload = (rows) =>
+  rows
+    .map((row) => ({ label: row.label.trim(), value: row.value.trim() }))
+    .filter((row) => row.label && row.value);
+
+/** Parse pasted specs/dimensions into label/value rows.
+ * Supports lines like:
+ *   Width: 60 cm
+ *   Height - 120 cm
+ *   Material | Solid wood
+ *   Seat Height	45 cm   (tab)
+ *   Depth 40 cm
+ */
+const parseAttributeBlock = (text) => {
+  if (!text || typeof text !== 'string') return [];
+
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) =>
+      line
+        .replace(/^[\s•\-–—*·▪▸►]+/, '')
+        .replace(/\s+$/, '')
+        .trim()
+    )
+    .filter(Boolean);
+
+  const rows = [];
+  for (const line of lines) {
+    if (line.includes('\t')) {
+      const [rawLabel, ...rest] = line.split('\t');
+      const label = rawLabel.trim();
+      const value = rest.join('\t').trim();
+      if (label && value) rows.push({ label, value });
+      continue;
+    }
+
+    const colon = line.match(/^(.{1,80}?)\s*[:：]\s*(.+)$/);
+    if (colon) {
+      rows.push({ label: colon[1].trim(), value: colon[2].trim() });
+      continue;
+    }
+
+    const pipe = line.match(/^(.{1,80}?)\s*\|\s*(.+)$/);
+    if (pipe) {
+      rows.push({ label: pipe[1].trim(), value: pipe[2].trim() });
+      continue;
+    }
+
+    const dash = line.match(/^(.{1,80}?)\s+[–—−-]\s+(.+)$/);
+    if (dash) {
+      rows.push({ label: dash[1].trim(), value: dash[2].trim() });
+      continue;
+    }
+
+    const doubleSpace = line.match(/^([A-Za-z][A-Za-z0-9 /&()'°.]{0,50}?)\s{2,}(.+)$/);
+    if (doubleSpace) {
+      rows.push({ label: doubleSpace[1].trim(), value: doubleSpace[2].trim() });
+      continue;
+    }
+
+    const untilDigit = line.match(/^([A-Za-z][A-Za-z0-9 /&()'°.]{0,50}?)\s+(\d.*)$/);
+    if (untilDigit) {
+      rows.push({ label: untilDigit[1].trim(), value: untilDigit[2].trim() });
+    }
+  }
+
+  return rows;
+};
+
 export default function Products() {
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -12,21 +142,18 @@ export default function Products() {
     price: '',
     description: '',
     backgroundVideoUrl: '',
-    dimensionsDetails: '',
-    width: '',
-    height: '',
-    depth: '',
-    seatHeight: '',
-    specificationsDetails: '',
-    material: '',
-    frame: '',
-    padding: '',
-    weightCapacity: '',
-    assembly: '',
+    homeOrder: '',
   });
+  const [dimensionRows, setDimensionRows] = useState([{ ...EMPTY_ATTRIBUTE_ROW }]);
+  const [specificationRows, setSpecificationRows] = useState([{ ...EMPTY_ATTRIBUTE_ROW }]);
+  const [dimensionPaste, setDimensionPaste] = useState('');
+  const [specificationPaste, setSpecificationPaste] = useState('');
   const [images, setImages] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedMainCategory, setSelectedMainCategory] = useState('all');
+  const [newCategoryMainCategory, setNewCategoryMainCategory] = useState('Consumer Products');
+  const [formMainCategory, setFormMainCategory] = useState('Consumer Products');
   const [editingId, setEditingId] = useState(null);
   const [currentImages, setCurrentImages] = useState([]);
   const [backgroundVideoFile, setBackgroundVideoFile] = useState(null);
@@ -59,6 +186,30 @@ export default function Products() {
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleAttributeRowChange = (setter, index, field, value) => {
+    setter((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  };
+
+  const addAttributeRow = (setter) => {
+    setter((prev) => [...prev, { ...EMPTY_ATTRIBUTE_ROW }]);
+  };
+
+  const removeAttributeRow = (setter, index) => {
+    setter((prev) => (prev.length === 1 ? [{ ...EMPTY_ATTRIBUTE_ROW }] : prev.filter((_, i) => i !== index)));
+  };
+
+  const applyAttributePaste = (setter, pasteText, clearPaste) => {
+    const parsed = parseAttributeBlock(pasteText);
+    if (!parsed.length) {
+      alert(
+        'Could not parse that text.\n\nPaste one item per line, for example:\nWidth: 60 cm\nHeight: 120 cm\nMaterial: Solid wood'
+      );
+      return;
+    }
+    setter(parsed);
+    clearPaste('');
+  };
+
   const resetForm = () => {
     setForm({
       name: '',
@@ -67,27 +218,29 @@ export default function Products() {
       price: '',
       description: '',
       backgroundVideoUrl: '',
-      dimensionsDetails: '',
-      width: '',
-      height: '',
-      depth: '',
-      seatHeight: '',
-      specificationsDetails: '',
-      material: '',
-      frame: '',
-      padding: '',
-      weightCapacity: '',
-      assembly: '',
+      homeOrder: '',
     });
+    setDimensionRows([{ ...EMPTY_ATTRIBUTE_ROW }]);
+    setSpecificationRows([{ ...EMPTY_ATTRIBUTE_ROW }]);
+    setDimensionPaste('');
+    setSpecificationPaste('');
     setImages([]);
     setBackgroundVideoFile(null);
     setShowForm(false);
     setEditingId(null);
     setCurrentImages([]);
     setCustomCategory('');
+    setFormMainCategory(
+      selectedMainCategory !== 'all' ? selectedMainCategory : 'Consumer Products'
+    );
   };
 
   const handleCreateCategory = async () => {
+    if (isFlatMainCategory(newCategoryMainCategory)) {
+      alert(`${newCategoryMainCategory} does not use sub-categories`);
+      return;
+    }
+
     const categoryName = customCategory.trim();
     if (!categoryName) {
       alert('Enter a category name');
@@ -97,7 +250,10 @@ export default function Products() {
     try {
       setCreatingCategory(true);
       setCategoryMessage({ type: '', text: '' });
-      const { data } = await api.post('/category/createcategories', { name: categoryName });
+      const { data } = await api.post('/category/createcategories', {
+        name: categoryName,
+        mainCategory: newCategoryMainCategory,
+      });
       const createdName = data?.name || categoryName;
 
       setCategories((prev) => {
@@ -110,7 +266,11 @@ export default function Products() {
       });
 
       setForm((prev) => ({ ...prev, category: createdName }));
-      setCategoryMessage({ type: 'success', text: `Category "${createdName}" created successfully` });
+      setFormMainCategory(newCategoryMainCategory);
+      setCategoryMessage({
+        type: 'success',
+        text: `Sub-category "${createdName}" created under ${newCategoryMainCategory}`,
+      });
       setCustomCategory('');
     } catch (e) {
       const message = e?.response?.data?.error || 'Failed to create category';
@@ -121,41 +281,65 @@ export default function Products() {
     }
   };
 
+  /** Ensure a single bucket category exists for flat mains (e.g. Industrial Products). */
+  const ensureFlatMainCategory = async (mainCategory) => {
+    const existing = categories.find((cat) => cat.mainCategory === mainCategory);
+    if (existing) return existing.name;
+
+    try {
+      const { data } = await api.post('/category/createcategories', {
+        name: mainCategory,
+        mainCategory,
+      });
+      setCategories((prev) => {
+        const exists = prev.some((cat) => cat._id === data._id || cat.name === data.name);
+        if (exists) return prev;
+        return [...prev, data].sort((a, b) => a.name.localeCompare(b.name));
+      });
+      return data.name || mainCategory;
+    } catch (e) {
+      // Race: category may already exist from another request
+      await fetchCategories();
+      const { data: fresh } = await api.get('/category/getcategories');
+      const found = (fresh || []).find((cat) => cat.mainCategory === mainCategory);
+      if (found) {
+        setCategories(fresh);
+        return found.name;
+      }
+      throw e;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
+      const flat = isFlatMainCategory(formMainCategory);
+      let categoryName = typeof form.category === 'object' ? form.category.name : form.category;
+      if (flat) {
+        categoryName = await ensureFlatMainCategory(formMainCategory);
+      }
+      if (!categoryName) {
+        alert('Select a sub-category');
+        return;
+      }
+
       const fd = new FormData();
       fd.append('name', form.name);
       fd.append('series', form.series);
-      fd.append('category', typeof form.category === 'object' ? form.category.name : form.category);
+      fd.append('category', categoryName);
       fd.append('price', form.price);
       fd.append('description', form.description);
+      fd.append('homeOrder', form.homeOrder === '' ? '0' : String(form.homeOrder));
       fd.append('backgroundVideoUrl', form.backgroundVideoUrl || '');
       if (backgroundVideoFile) {
         fd.append('backgroundVideo', backgroundVideoFile);
       }
       fd.append(
         'dimensions',
-        JSON.stringify({
-          details: form.dimensionsDetails,
-          width: form.width,
-          height: form.height,
-          depth: form.depth,
-          seatHeight: form.seatHeight,
-        })
+        JSON.stringify(flat ? [] : rowsToPayload(dimensionRows))
       );
-      fd.append(
-        'specifications',
-        JSON.stringify({
-          details: form.specificationsDetails,
-          material: form.material,
-          frame: form.frame,
-          padding: form.padding,
-          weightCapacity: form.weightCapacity,
-          assembly: form.assembly,
-        })
-      );
+      fd.append('specifications', JSON.stringify(rowsToPayload(specificationRows)));
       images.forEach((file) => fd.append('images', file));
       // minimal JSON defaults for fields not yet in UI
       fd.append('colors', JSON.stringify([]));
@@ -187,12 +371,36 @@ export default function Products() {
     }
   };
 
-  const filteredItems = selectedCategory === 'all' 
-    ? items 
-    : items.filter(item => {
-        const itemCategory = typeof item.category === 'object' ? item.category.name : item.category;
-        return itemCategory === selectedCategory;
-      });
+  const filteredItems = items
+    .filter((item) => {
+      const itemCategory = typeof item.category === 'object' ? item.category : null;
+      const itemCategoryName = itemCategory?.name || item.category;
+      const itemMainCategory = itemCategory?.mainCategory;
+
+      if (selectedMainCategory !== 'all' && itemMainCategory !== selectedMainCategory) {
+        return false;
+      }
+      if (selectedCategory !== 'all' && itemCategoryName !== selectedCategory) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const orderA = a.homeOrder > 0 ? a.homeOrder : Number.POSITIVE_INFINITY;
+      const orderB = b.homeOrder > 0 ? b.homeOrder : Number.POSITIVE_INFINITY;
+      if (orderA !== orderB) return orderA - orderB;
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+
+  const filteredCategoriesForDropdown = selectedMainCategory === 'all'
+    ? categories
+    : categories.filter((cat) => cat.mainCategory === selectedMainCategory);
+
+  const formSubCategories = categories.filter(
+    (cat) => cat.mainCategory === formMainCategory
+  );
+  const formIsFlat = isFlatMainCategory(formMainCategory);
+  const subcategoryMains = MAIN_CATEGORIES.filter((mc) => !isFlatMainCategory(mc));
 
   const fieldLabelStyle = {
     display: 'block',
@@ -200,6 +408,31 @@ export default function Products() {
     color: '#444',
     fontSize: '13px',
     fontWeight: 600,
+  };
+
+  const openAddProductForm = () => {
+    const main =
+      selectedMainCategory !== 'all' ? selectedMainCategory : 'Consumer Products';
+    setFormMainCategory(main);
+    setNewCategoryMainCategory(main);
+    setEditingId(null);
+    setForm({
+      name: '',
+      series: '',
+      category: '',
+      price: '',
+      description: '',
+      backgroundVideoUrl: '',
+      homeOrder: '',
+    });
+    setDimensionRows([{ ...EMPTY_ATTRIBUTE_ROW }]);
+    setSpecificationRows([{ ...EMPTY_ATTRIBUTE_ROW }]);
+    setDimensionPaste('');
+    setSpecificationPaste('');
+    setImages([]);
+    setBackgroundVideoFile(null);
+    setCurrentImages([]);
+    setShowForm(true);
   };
 
   return (
@@ -213,7 +446,13 @@ export default function Products() {
         justifyContent: 'flex-end'
       }}>
         <button 
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (showForm) {
+              resetForm();
+            } else {
+              openAddProductForm();
+            }
+          }}
           style={{
             padding: '10px 20px',
             background: showForm ? '#e5e5e5' : '#111111',
@@ -241,12 +480,23 @@ export default function Products() {
           marginBottom: '20px',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px'
+          gap: '12px',
+          flexWrap: 'wrap'
         }}>
-          <span style={{ fontWeight: '600', color: '#333' }}>Filter by Category:</span>
+          <span style={{ fontWeight: '600', color: '#333' }}>Filter:</span>
           <select 
-            value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            value={selectedMainCategory} 
+            onChange={(e) => {
+              const next = e.target.value;
+              setSelectedMainCategory(next);
+              setSelectedCategory('all');
+              if (next !== 'all') {
+                setNewCategoryMainCategory(
+                  isFlatMainCategory(next) ? 'Consumer Products' : next
+                );
+                setFormMainCategory(next);
+              }
+            }}
             style={{
               padding: '8px 12px',
               border: '1px solid #ddd',
@@ -254,8 +504,24 @@ export default function Products() {
               fontSize: '14px'
             }}
           >
-            <option value="all">All Categories</option>
-            {categories.map(cat => (
+            <option value="all">All Main Categories</option>
+            {MAIN_CATEGORIES.map((mc) => (
+              <option key={mc} value={mc}>{mc}</option>
+            ))}
+          </select>
+          <select 
+            value={selectedCategory} 
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '6px',
+              fontSize: '14px',
+              display: isFlatMainCategory(selectedMainCategory) ? 'none' : undefined,
+            }}
+          >
+            <option value="all">All Sub-Categories</option>
+            {filteredCategoriesForDropdown.map(cat => (
               <option key={cat._id} value={cat.name}>{cat.name}</option>
             ))}
           </select>
@@ -272,18 +538,40 @@ export default function Products() {
           marginBottom: '20px'
         }}>
           <div style={{ marginBottom: '10px' }}>
-            <h4 style={{ margin: 0, color: '#333' }}>Add Category</h4>
+            <h4 style={{ margin: 0, color: '#333' }}>Add Sub-Category</h4>
             <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '13px' }}>
-              Create categories first, then use them while adding products.
+              Consumer Products use sub-categories (e.g. Chairs). Industrial Products
+              sit directly under the main category — no sub-categories or dimensions.
+              Industrial Services and Digital Products also have their own landing pages.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={
+                isFlatMainCategory(newCategoryMainCategory)
+                  ? 'Consumer Products'
+                  : newCategoryMainCategory
+              }
+              onChange={(e) => setNewCategoryMainCategory(e.target.value)}
+              style={{
+                padding: '10px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '6px',
+                fontSize: '14px',
+                minWidth: '180px'
+              }}
+            >
+              {subcategoryMains.map((mc) => (
+                <option key={mc} value={mc}>{mc}</option>
+              ))}
+            </select>
             <input
               value={customCategory}
               onChange={(e) => setCustomCategory(e.target.value)}
-              placeholder="Enter category name"
+              placeholder="Enter sub-category name (e.g. Chairs)"
               style={{
                 flex: 1,
+                minWidth: '200px',
                 padding: '10px 12px',
                 border: '1px solid #ddd',
                 borderRadius: '6px',
@@ -320,13 +608,15 @@ export default function Products() {
           )}
           <div style={{ marginTop: '12px' }}>
             <p style={{ margin: '0 0 8px 0', fontSize: '13px', color: '#444', fontWeight: 600 }}>
-              Available Categories
+              Available Sub-Categories
             </p>
-            {categories.length === 0 ? (
+            {categories.filter((cat) => !isFlatMainCategory(cat.mainCategory)).length === 0 ? (
               <p style={{ margin: 0, fontSize: '13px', color: '#777' }}>No categories created yet.</p>
             ) : (
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {categories.map((cat) => (
+                {categories
+                  .filter((cat) => !isFlatMainCategory(cat.mainCategory))
+                  .map((cat) => (
                   <span
                     key={cat._id || cat.name}
                     style={{
@@ -339,6 +629,9 @@ export default function Products() {
                     }}
                   >
                     {cat.name}
+                    {cat.mainCategory && (
+                      <span style={{ color: '#888', marginLeft: '4px' }}>({cat.mainCategory})</span>
+                    )}
                   </span>
                 ))}
               </div>
@@ -388,38 +681,164 @@ export default function Products() {
                 }}
               />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <select 
-                name="category" 
-                value={form.category} 
-                onChange={handleChange}
+            <div style={{ display: 'grid', gridTemplateColumns: formIsFlat ? '1fr' : '1fr 1fr', gap: '16px' }}>
+              <div>
+                <label style={fieldLabelStyle}>Main Category *</label>
+                <select
+                  value={formMainCategory}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setFormMainCategory(next);
+                    if (!isFlatMainCategory(next)) {
+                      setNewCategoryMainCategory(next);
+                    }
+                    setForm((prev) => ({ ...prev, category: '' }));
+                    if (isFlatMainCategory(next)) {
+                      setDimensionRows([{ ...EMPTY_ATTRIBUTE_ROW }]);
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box',
+                  }}
+                  required
+                >
+                  {MAIN_CATEGORIES.map((mc) => (
+                    <option key={mc} value={mc}>{mc}</option>
+                  ))}
+                </select>
+              </div>
+              {!formIsFlat && (
+              <div>
+                <label style={fieldLabelStyle}>Sub-Category *</label>
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '6px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box',
+                  }}
+                  required
+                >
+                  <option value="">
+                    {formSubCategories.length === 0
+                      ? `No sub-categories under ${formMainCategory}`
+                      : 'Select Sub-Category'}
+                  </option>
+                  {formSubCategories.map((cat) => (
+                    <option key={cat._id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              )}
+            </div>
+            {!formIsFlat && formSubCategories.length === 0 && (
+              <div
                 style={{
-                  padding: '12px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '16px'
+                  padding: '12px 14px',
+                  background: '#f8fafc',
+                  border: '1px dashed #cbd5e1',
+                  borderRadius: '8px',
                 }}
-                required
               >
-                <option value="">Select Category</option>
-                {categories.map(cat => (
-                  <option key={cat._id} value={cat.name}>{cat.name}</option>
-                ))}
-              </select>
-              <input 
-                name="price" 
-                placeholder="Price (₹)" 
-                type="number" 
-                value={form.price} 
+                <p style={{ margin: '0 0 10px 0', fontSize: '13px', color: '#475569' }}>
+                  Create a sub-category under <strong>{formMainCategory}</strong> to continue.
+                </p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <input
+                    value={customCategory}
+                    onChange={(e) => setCustomCategory(e.target.value)}
+                    placeholder="e.g. Machinery, Parts…"
+                    style={{
+                      flex: 1,
+                      minWidth: '180px',
+                      padding: '10px 12px',
+                      border: '1px solid #ddd',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCreateCategory}
+                    disabled={creatingCategory}
+                    style={{
+                      padding: '10px 16px',
+                      background: '#111',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {creatingCategory ? 'Creating…' : `Add under ${formMainCategory}`}
+                  </button>
+                </div>
+              </div>
+            )}
+            {formIsFlat && (
+              <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
+                Products are listed under {formMainCategory} with no sub-categories or dimensions.
+              </p>
+            )}
+            <input 
+              name="price" 
+              placeholder="Price (₹)" 
+              type="number" 
+              value={form.price} 
+              onChange={handleChange}
+              style={{
+                padding: '12px',
+                border: '1px solid #ddd',
+                borderRadius: '6px',
+                fontSize: '16px',
+                maxWidth: '280px',
+              }}
+              required 
+            />
+            <div>
+              <label
+                htmlFor="homeOrder"
+                style={{ display: 'block', marginBottom: '8px', fontWeight: 600, color: '#333' }}
+              >
+                Home page position
+              </label>
+              <select
+                id="homeOrder"
+                name="homeOrder"
+                value={form.homeOrder}
                 onChange={handleChange}
                 style={{
                   padding: '12px',
                   border: '1px solid #ddd',
                   borderRadius: '6px',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  maxWidth: '320px',
+                  width: '100%',
+                  background: '#fff',
                 }}
-                required 
-              />
+              >
+                <option value="">Not prioritized (won&apos;t be in top 3)</option>
+                <option value="1">1st on home (this category)</option>
+                <option value="2">2nd on home (this category)</option>
+                <option value="3">3rd on home (this category)</option>
+                <option value="4">4th (reserve / next in line)</option>
+                <option value="5">5th</option>
+              </select>
+              <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#666', lineHeight: 1.45 }}>
+                Home shows only 3 products per category. Set 1, 2, and 3 on the products you want featured.
+                Lower number appears first.
+              </p>
             </div>
             <textarea 
               name="description" 
@@ -481,227 +900,271 @@ export default function Products() {
                 }}
               />
             </div>
+            {!formIsFlat && (
             <div style={{
               border: '1px solid #e5e5e5',
               borderRadius: '10px',
               padding: '14px',
               background: '#fafafa'
             }}>
-              <h4 style={{ margin: '0 0 12px 0', color: '#222' }}>Dimensions</h4>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={fieldLabelStyle} htmlFor="dimensionsDetails">Notes</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h4 style={{ margin: 0, color: '#222' }}>Dimensions</h4>
+                <button
+                  type="button"
+                  onClick={() => addAttributeRow(setDimensionRows)}
+                  style={{
+                    padding: '6px 12px',
+                    border: '1px solid #111',
+                    borderRadius: '999px',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                  }}
+                >
+                  + Add row
+                </button>
+              </div>
+              <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#666' }}>
+                Add custom sub-headings for this product (e.g. Width, Table Top Size, Seat Height).
+                Or paste a full list below — one item per line — and click Fill rows.
+              </p>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={fieldLabelStyle} htmlFor="dimension-paste">Paste dimensions</label>
                 <textarea
-                  id="dimensionsDetails"
-                  name="dimensionsDetails"
-                  placeholder="Any additional size details"
-                  value={form.dimensionsDetails}
-                  onChange={handleChange}
+                  id="dimension-paste"
+                  value={dimensionPaste}
+                  onChange={(e) => setDimensionPaste(e.target.value)}
+                  onPaste={(e) => {
+                    const pasted = e.clipboardData?.getData('text') || '';
+                    if (pasted.includes('\n') || /[:|\t]/.test(pasted)) {
+                      e.preventDefault();
+                      setDimensionPaste(pasted);
+                      const parsed = parseAttributeBlock(pasted);
+                      if (parsed.length) {
+                        setDimensionRows(parsed);
+                        setDimensionPaste('');
+                      }
+                    }
+                  }}
+                  placeholder={'Width: 60 cm\nHeight: 120 cm\nDepth: 40 cm'}
+                  rows={3}
                   style={{
                     width: '100%',
-                    padding: '12px',
+                    padding: '10px 12px',
                     border: '1px solid #ddd',
                     borderRadius: '6px',
-                    fontSize: '15px',
-                    minHeight: '64px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
                     resize: 'vertical',
-                    boxSizing: 'border-box'
+                    fontFamily: 'inherit',
+                    marginBottom: '8px',
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => applyAttributePaste(setDimensionRows, dimensionPaste, setDimensionPaste)}
+                  style={{
+                    padding: '8px 14px',
+                    border: '1px solid #111',
+                    borderRadius: '999px',
+                    background: '#111',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Fill rows from paste
+                </button>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="width">Width</label>
-                  <input
-                    id="width"
-                    name="width"
-                    placeholder="e.g. 60 cm"
-                    value={form.width}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
+              {dimensionRows.map((row, index) => (
+                <div key={`dimension-${index}`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', marginBottom: '12px' }}>
+                  <div>
+                    <label style={fieldLabelStyle} htmlFor={`dimension-label-${index}`}>Sub-heading</label>
+                    <input
+                      id={`dimension-label-${index}`}
+                      placeholder="e.g. Width"
+                      value={row.label}
+                      onChange={(e) => handleAttributeRowChange(setDimensionRows, index, 'label', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        fontSize: '15px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={fieldLabelStyle} htmlFor={`dimension-value-${index}`}>Value</label>
+                    <input
+                      id={`dimension-value-${index}`}
+                      placeholder="e.g. 60 cm"
+                      value={row.value}
+                      onChange={(e) => handleAttributeRowChange(setDimensionRows, index, 'value', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        fontSize: '15px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <button
+                      type="button"
+                      onClick={() => removeAttributeRow(setDimensionRows, index)}
+                      style={{
+                        padding: '10px 12px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="height">Height</label>
-                  <input
-                    id="height"
-                    name="height"
-                    placeholder="e.g. 85 cm"
-                    value={form.height}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="depth">Depth</label>
-                  <input
-                    id="depth"
-                    name="depth"
-                    placeholder="e.g. 55 cm"
-                    value={form.depth}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="seatHeight">Seat Height</label>
-                  <input
-                    id="seatHeight"
-                    name="seatHeight"
-                    placeholder="e.g. 45 cm"
-                    value={form.seatHeight}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-              </div>
+              ))}
             </div>
+            )}
             <div style={{
               border: '1px solid #e5e5e5',
               borderRadius: '10px',
               padding: '14px',
               background: '#fafafa'
             }}>
-              <h4 style={{ margin: '0 0 12px 0', color: '#222' }}>Specifications</h4>
-              <div style={{ marginBottom: '12px' }}>
-                <label style={fieldLabelStyle} htmlFor="specificationsDetails">Notes</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h4 style={{ margin: 0, color: '#222' }}>Specifications</h4>
+                <button
+                  type="button"
+                  onClick={() => addAttributeRow(setSpecificationRows)}
+                  style={{
+                    padding: '6px 12px',
+                    border: '1px solid #111',
+                    borderRadius: '999px',
+                    background: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                  }}
+                >
+                  + Add row
+                </button>
+              </div>
+              <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#666' }}>
+                Add custom sub-headings for this product (e.g. Material, Frame, Weight Capacity).
+                Or paste a full list below — one item per line — and click Fill rows.
+              </p>
+              <div style={{ marginBottom: '14px' }}>
+                <label style={fieldLabelStyle} htmlFor="specification-paste">Paste specifications</label>
                 <textarea
-                  id="specificationsDetails"
-                  name="specificationsDetails"
-                  placeholder="Any additional specification details"
-                  value={form.specificationsDetails}
-                  onChange={handleChange}
+                  id="specification-paste"
+                  value={specificationPaste}
+                  onChange={(e) => setSpecificationPaste(e.target.value)}
+                  onPaste={(e) => {
+                    const pasted = e.clipboardData?.getData('text') || '';
+                    if (pasted.includes('\n') || /[:|\t]/.test(pasted)) {
+                      e.preventDefault();
+                      setSpecificationPaste(pasted);
+                      const parsed = parseAttributeBlock(pasted);
+                      if (parsed.length) {
+                        setSpecificationRows(parsed);
+                        setSpecificationPaste('');
+                      }
+                    }
+                  }}
+                  placeholder={'Material: Solid wood\nFrame: Powder-coated steel\nWeight Capacity: 120 kg'}
+                  rows={3}
                   style={{
                     width: '100%',
-                    padding: '12px',
+                    padding: '10px 12px',
                     border: '1px solid #ddd',
                     borderRadius: '6px',
-                    fontSize: '15px',
-                    minHeight: '64px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box',
                     resize: 'vertical',
-                    boxSizing: 'border-box'
+                    fontFamily: 'inherit',
+                    marginBottom: '8px',
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() =>
+                    applyAttributePaste(setSpecificationRows, specificationPaste, setSpecificationPaste)
+                  }
+                  style={{
+                    padding: '8px 14px',
+                    border: '1px solid #111',
+                    borderRadius: '999px',
+                    background: '#111',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                  }}
+                >
+                  Fill rows from paste
+                </button>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="material">Material</label>
-                  <input
-                    id="material"
-                    name="material"
-                    placeholder="e.g. Solid wood"
-                    value={form.material}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
+              {specificationRows.map((row, index) => (
+                <div key={`specification-${index}`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', marginBottom: '12px' }}>
+                  <div>
+                    <label style={fieldLabelStyle} htmlFor={`specification-label-${index}`}>Sub-heading</label>
+                    <input
+                      id={`specification-label-${index}`}
+                      placeholder="e.g. Material"
+                      value={row.label}
+                      onChange={(e) => handleAttributeRowChange(setSpecificationRows, index, 'label', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        fontSize: '15px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label style={fieldLabelStyle} htmlFor={`specification-value-${index}`}>Value</label>
+                    <input
+                      id={`specification-value-${index}`}
+                      placeholder="e.g. Solid wood"
+                      value={row.value}
+                      onChange={(e) => handleAttributeRowChange(setSpecificationRows, index, 'value', e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        fontSize: '15px',
+                        boxSizing: 'border-box'
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <button
+                      type="button"
+                      onClick={() => removeAttributeRow(setSpecificationRows, index)}
+                      style={{
+                        padding: '10px 12px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        background: '#fff',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="frame">Frame</label>
-                  <input
-                    id="frame"
-                    name="frame"
-                    placeholder="e.g. Metal frame"
-                    value={form.frame}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="padding">Padding</label>
-                  <input
-                    id="padding"
-                    name="padding"
-                    placeholder="e.g. High-density foam"
-                    value={form.padding}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={fieldLabelStyle} htmlFor="weightCapacity">Weight Capacity</label>
-                  <input
-                    id="weightCapacity"
-                    name="weightCapacity"
-                    placeholder="e.g. 120 kg"
-                    value={form.weightCapacity}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-                <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={fieldLabelStyle} htmlFor="assembly">Assembly</label>
-                  <input
-                    id="assembly"
-                    name="assembly"
-                    placeholder="e.g. Self assembly required"
-                    value={form.assembly}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '6px',
-                      fontSize: '15px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-              </div>
+              ))}
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
@@ -897,9 +1360,28 @@ export default function Products() {
                 />
               </div>
               <div style={{ padding: '20px' }}>
-                <h3 style={{ margin: '0 0 8px 0', color: '#333', fontSize: '1.1rem' }}>
-                  {item.name}
-                </h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+                  <h3 style={{ margin: '0 0 8px 0', color: '#333', fontSize: '1.1rem' }}>
+                    {item.name}
+                  </h3>
+                  {item.homeOrder > 0 && (
+                    <span
+                      title="Home page position in this category"
+                      style={{
+                        flexShrink: 0,
+                        background: '#111',
+                        color: '#fff',
+                        padding: '4px 8px',
+                        borderRadius: '999px',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      HOME #{item.homeOrder}
+                    </span>
+                  )}
+                </div>
                 {item.series && (
                   <p style={{ 
                     margin: '0 0 8px 0', 
@@ -924,7 +1406,16 @@ export default function Products() {
                     fontSize: '0.8rem',
                     fontWeight: '600'
                   }}>
-                    {typeof item.category === 'object' ? item.category.name : item.category}
+                    {typeof item.category === 'object' && isFlatMainCategory(item.category.mainCategory)
+                      ? item.category.mainCategory
+                      : (
+                        <>
+                          {typeof item.category === 'object' ? item.category.name : item.category}
+                          {typeof item.category === 'object' && item.category.mainCategory && (
+                            <span style={{ fontWeight: 400, color: '#777' }}> · {item.category.mainCategory}</span>
+                          )}
+                        </>
+                      )}
                   </span>
                   <span style={{ 
                     fontWeight: 'bold', 
@@ -973,9 +1464,14 @@ export default function Products() {
                   <button 
                     type="button"
                     onClick={() => {
+                      const mainFromItem =
+                        (typeof item.category === 'object' && item.category?.mainCategory) ||
+                        'Consumer Products';
                       setEditingId(item._id);
                       setShowForm(true);
                       setBackgroundVideoFile(null);
+                      setFormMainCategory(mainFromItem);
+                      setNewCategoryMainCategory(mainFromItem);
                       setForm({
                         name: item.name || '',
                         series: item.series || '',
@@ -983,18 +1479,12 @@ export default function Products() {
                         price: item.price || '',
                         description: item.description || '',
                         backgroundVideoUrl: item.backgroundVideoUrl || item.videoUrl || '',
-                        dimensionsDetails: item.dimensions?.details || '',
-                        width: item.dimensions?.width || '',
-                        height: item.dimensions?.height || '',
-                        depth: item.dimensions?.depth || '',
-                        seatHeight: item.dimensions?.seatHeight || '',
-                        specificationsDetails: item.specifications?.details || '',
-                        material: item.specifications?.material || '',
-                        frame: item.specifications?.frame || '',
-                        padding: item.specifications?.padding || '',
-                        weightCapacity: item.specifications?.weightCapacity || '',
-                        assembly: item.specifications?.assembly || '',
+                        homeOrder: item.homeOrder > 0 ? String(item.homeOrder) : '',
                       });
+                      setDimensionRows(attributesToRows(item.dimensions));
+                      setSpecificationRows(attributesToRows(item.specifications));
+                      setDimensionPaste('');
+                      setSpecificationPaste('');
                       setImages([]);
                       setCurrentImages(Array.isArray(item.images) ? item.images : []);
                     }}

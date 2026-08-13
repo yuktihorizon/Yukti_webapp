@@ -67,6 +67,27 @@ const defaultServicePageDocument = {
         },
       ],
     },
+    {
+      id: 'digital-products',
+      theme: 'dark',
+      number: '03',
+      label: 'DIGITAL PRODUCTS',
+      headingLines: ['From Concept To Screen', 'Before It Reaches The Floor'],
+      paragraphs: [
+        'We develop digital products and interfaces that support how your ideas are visualized, communicated, and brought to market—bridging design intent with practical execution.',
+        'Each digital deliverable is shaped with the same rigour we apply on the workshop floor: clear structure, tested usability, and a path from prototype to production.',
+      ],
+      images: [
+        {
+          src: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
+          alt: 'Digital product design',
+        },
+        {
+          src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+          alt: 'Digital workflow',
+        },
+      ],
+    },
   ],
   projectForm: {
     backgroundImage:

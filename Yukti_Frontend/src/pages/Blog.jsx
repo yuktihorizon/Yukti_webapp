@@ -6,6 +6,30 @@ import heroImg from '../assets/concepts-hero.png';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+function getArticleBlocks(post) {
+  if (Array.isArray(post.slideItems) && post.slideItems.length > 0) {
+    return post.slideItems;
+  }
+  return (post.content || []).map((para) => ({ type: 'text', content: para }));
+}
+
+function getPresentationSlideItems(post) {
+  if (Array.isArray(post.slideItems) && post.slideItems.length > 0) {
+    return post.slideItems;
+  }
+  const rawSlides = [post.image, ...(post.slides || [])].filter(
+    (s) => typeof s === 'string' && s.trim()
+  );
+  const seen = new Set();
+  return rawSlides
+    .filter((url) => {
+      if (seen.has(url)) return false;
+      seen.add(url);
+      return true;
+    })
+    .map((url) => ({ type: 'image', content: url }));
+}
+
 const CATEGORIES = ['All', 'Images', 'Presentations', 'Articles'];
 
 const CATEGORY_ROUTE_MAP = {
@@ -93,15 +117,7 @@ export default function Blog() {
 
   // ─── Detail: Presentation type ───
   if (selectedPost && isPresentationType) {
-    const rawSlides = [selectedPost.image, ...(selectedPost.slides || [])].filter(
-      (s) => typeof s === 'string' && s.trim()
-    );
-    const seen = new Set();
-    const slides = rawSlides.filter((url) => {
-      if (seen.has(url)) return false;
-      seen.add(url);
-      return true;
-    });
+    const slideItems = getPresentationSlideItems(selectedPost);
 
     return (
       <main className="blog-page blog-page--presentation-detail">
@@ -115,11 +131,17 @@ export default function Blog() {
               {selectedPost.detailTitle || selectedPost.title}
             </h1>
             <div className="blog-presentation-slides">
-              {slides.map((slide, i) => (
-                <div key={`${slide}-${i}`} className="blog-presentation-slide">
-                  <img src={slide} alt={`Slide ${i + 1}`} />
-                </div>
-              ))}
+              {slideItems.map((item, i) =>
+                item.type === 'text' ? (
+                  <div key={`text-${i}`} className="blog-presentation-slide blog-presentation-slide--text">
+                    <p>{item.content}</p>
+                  </div>
+                ) : (
+                  <div key={`${item.content}-${i}`} className="blog-presentation-slide">
+                    <img src={item.content} alt={`Slide ${i + 1}`} />
+                  </div>
+                )
+              )}
             </div>
           </div>
         </div>
@@ -198,6 +220,12 @@ export default function Blog() {
       (p) => p._id !== selectedPost._id && p.category !== 'Images'
     ).slice(0, 2);
 
+    const articleBlocks = getArticleBlocks(selectedPost);
+    const bodyBlocks =
+      articleBlocks[0]?.type === 'image' && articleBlocks[0].content === selectedPost.image
+        ? articleBlocks.slice(1)
+        : articleBlocks;
+
     return (
       <main className="blog-page">
         <div className="blog-article-detail">
@@ -213,9 +241,15 @@ export default function Blog() {
             <div className="blog-article-content">
               <span className="blog-article-date">{formatDate(selectedPost.createdAt)}</span>
               <h1 className="blog-article-title">{selectedPost.title}</h1>
-              {(selectedPost.content || []).map((para, i) => (
-                <p key={i} className="blog-article-para">{para}</p>
-              ))}
+              {bodyBlocks.map((block, i) =>
+                block.type === 'image' ? (
+                  <div key={`img-${i}`} className="blog-article-inline-image">
+                    <img src={block.content} alt="" />
+                  </div>
+                ) : (
+                  <p key={`text-${i}`} className="blog-article-para">{block.content}</p>
+                )
+              )}
             </div>
           </div>
         </div>

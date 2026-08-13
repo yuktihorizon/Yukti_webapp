@@ -16,21 +16,25 @@ const productSchema = new mongoose.Schema({
   videoUrl: String,
   /** Full-page product detail background: YouTube URL or direct video URL (e.g. Cloudinary). */
   backgroundVideoUrl: String,
-  dimensions: {
-    details: String,
-    width: String,
-    height: String,
-    depth: String,
-    seatHeight: String
+  /** Flexible label/value pairs — each product can define its own sub-headings. */
+  dimensions: [{
+    label: String,
+    value: String
+  }],
+  specifications: [{
+    label: String,
+    value: String
+  }],
+  /**
+   * Home page priority within a category (1 = first, 2 = second, …).
+   * Only the first 3 products (by this order) are shown on the home slider.
+   * 0 / unset = not prioritized (shown after numbered products).
+   */
+  homeOrder: {
+    type: Number,
+    default: 0,
+    min: 0,
   },
-  specifications: {
-    details: String,
-    material: String,
-    frame: String,
-    padding: String,
-    weightCapacity: String,
-    assembly: String
-  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', productSchema);

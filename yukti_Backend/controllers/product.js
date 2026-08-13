@@ -3,6 +3,66 @@ const cloudinary = require('../config/cloudinary');
 const streamifier = require('streamifier');
 const Category = require('../models/Category');
 
+const LEGACY_LABELS = {
+  width: 'Width',
+  height: 'Height',
+  depth: 'Depth',
+  seatHeight: 'Seat Height',
+  material: 'Material',
+  frame: 'Frame',
+  padding: 'Padding',
+  weightCapacity: 'Weight Capacity',
+  assembly: 'Assembly',
+};
+
+const formatLegacyKey = (rawKey) => {
+  if (!rawKey || typeof rawKey !== 'string') return '';
+  const spaced = rawKey
+    .replace(/_/g, ' ')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .trim();
+  return spaced
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
+const normalizeAttributeField = (data) => {
+  if (!data) return [];
+
+  let parsed = data;
+  if (typeof data === 'string') {
+    const trimmed = data.trim();
+    if (!trimmed) return [];
+    try {
+      parsed = JSON.parse(trimmed);
+    } catch {
+      return [{ label: 'Details', value: trimmed }];
+    }
+  }
+
+  if (Array.isArray(parsed)) {
+    return parsed
+      .map((item) => ({
+        label: String(item?.label || '').trim(),
+        value: String(item?.value || '').trim(),
+      }))
+      .filter((item) => item.label && item.value);
+  }
+
+  if (typeof parsed === 'object') {
+    return Object.entries(parsed)
+      .filter(([key, val]) => key.toLowerCase() !== 'details' && val != null && String(val).trim())
+      .map(([key, val]) => ({
+        label: LEGACY_LABELS[key] || formatLegacyKey(key),
+        value: String(val).trim(),
+      }));
+  }
+
+  return [];
+};
+
 const uploadToCloudinary = (buffer, folder) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -33,7 +93,7 @@ exports.createProduct = async (req, res) => {
   try {
     const {
       name, series, description, category, price,
-      colors, videoUrl, backgroundVideoUrl, dimensions, specifications
+      colors, videoUrl, backgroundVideoUrl, dimensions, specifications, homeOrder,
     } = req.body;
 
     const foundCategory = await Category.findOne({ name: category.trim() });
@@ -62,24 +122,15 @@ exports.createProduct = async (req, res) => {
     }
 
     try {
-      // allow plain text as a simple "details" field
-      parsedDimensions = dimensions
-        ? typeof dimensions === 'string' && !dimensions.trim().startsWith('{')
-          ? { details: dimensions }
-          : JSON.parse(dimensions)
-        : {};
+      parsedDimensions = normalizeAttributeField(dimensions);
     } catch {
-      parsedDimensions = {};
+      parsedDimensions = [];
     }
 
     try {
-      parsedSpecifications = specifications
-        ? typeof specifications === 'string' && !specifications.trim().startsWith('{')
-          ? { details: specifications }
-          : JSON.parse(specifications)
-        : {};
+      parsedSpecifications = normalizeAttributeField(specifications);
     } catch {
-      parsedSpecifications = {};
+      parsedSpecifications = [];
     }
 
     let resolvedBackgroundVideoUrl =
@@ -89,6 +140,7 @@ exports.createProduct = async (req, res) => {
       resolvedBackgroundVideoUrl = await uploadVideoToCloudinary(bgFile.buffer, 'products/videos');
     }
 
+    const parsedHomeOrder = Number.parseInt(homeOrder, 10);
     const newProduct = new Product({
       name,
       series,
@@ -100,7 +152,8 @@ exports.createProduct = async (req, res) => {
       backgroundVideoUrl: resolvedBackgroundVideoUrl || undefined,
       dimensions: parsedDimensions,
       specifications: parsedSpecifications,
-      images
+      images,
+      homeOrder: Number.isFinite(parsedHomeOrder) && parsedHomeOrder > 0 ? parsedHomeOrder : 0,
     });
 
     await newProduct.save();
@@ -113,8 +166,16 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
   try {
-    const { category, limit } = req.query;
-    const query = category ? { category } : {};
+    const { category, mainCategory, limit } = req.query;
+    let query = {};
+
+    if (category) {
+      query.category = category;
+    } else if (mainCategory) {
+      const matchingCategories = await Category.find({ mainCategory: mainCategory.trim() }).select('_id');
+      query.category = { $in: matchingCategories.map((c) => c._id) };
+    }
+
     const products = await Product.find(query).limit(parseInt(limit) || 0).populate('category');
     res.json(products);
   } catch (err) {
@@ -158,6 +219,7 @@ exports.updateProduct = async (req, res) => {
       backgroundVideoUrl,
       dimensions,
       specifications,
+      homeOrder,
       imagesOrder,
     } = req.body;
 
@@ -179,6 +241,10 @@ exports.updateProduct = async (req, res) => {
     if (typeof description === 'string') product.description = description;
     if (typeof price !== 'undefined') product.price = price;
     if (typeof videoUrl === 'string') product.videoUrl = videoUrl;
+    if (typeof homeOrder !== 'undefined') {
+      const parsedHomeOrder = Number.parseInt(homeOrder, 10);
+      product.homeOrder = Number.isFinite(parsedHomeOrder) && parsedHomeOrder > 0 ? parsedHomeOrder : 0;
+    }
 
     const bgFile = req.files && req.files.backgroundVideo && req.files.backgroundVideo[0];
     if (bgFile && bgFile.buffer) {
@@ -199,24 +265,18 @@ exports.updateProduct = async (req, res) => {
     // dimensions
     if (typeof dimensions !== 'undefined') {
       try {
-        product.dimensions =
-          typeof dimensions === 'string' && !dimensions.trim().startsWith('{')
-            ? { details: dimensions }
-            : JSON.parse(dimensions);
+        product.dimensions = normalizeAttributeField(dimensions);
       } catch {
-        product.dimensions = {};
+        product.dimensions = [];
       }
     }
 
     // specifications
     if (typeof specifications !== 'undefined') {
       try {
-        product.specifications =
-          typeof specifications === 'string' && !specifications.trim().startsWith('{')
-            ? { details: specifications }
-            : JSON.parse(specifications);
+        product.specifications = normalizeAttributeField(specifications);
       } catch {
-        product.specifications = {};
+        product.specifications = [];
       }
     }
     if (imagesOrder) product.images = JSON.parse(imagesOrder);

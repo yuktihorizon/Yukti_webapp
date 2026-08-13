@@ -54,7 +54,7 @@ const Cart = () => {
               </div>
             </div>
 
-            <div className="cart-price">Rs. {item.price.toLocaleString()}</div>
+            <div className="cart-price">Rs. {item.price.toLocaleString()} <span className="price-gst">(GST inc.)</span></div>
 
             <div className="cart-quantity">
               <button onClick={() => decrementQuantity(item._id)}>-</button>

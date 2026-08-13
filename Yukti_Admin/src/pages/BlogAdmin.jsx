@@ -41,6 +41,7 @@ export default function BlogAdmin() {
   const [slideFiles, setSlideFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [existingSlides, setExistingSlides] = useState([]);
+  const [docxFile, setDocxFile] = useState(null);
 
   const fetchItems = async () => {
     try {
@@ -59,6 +60,7 @@ export default function BlogAdmin() {
       setGalleryFiles([]);
       setSlideFiles([]);
       setImageFile(null);
+      setDocxFile(null);
     }
     setForm({ ...form, [name]: value });
   };
@@ -70,6 +72,7 @@ export default function BlogAdmin() {
     setSlideFiles([]);
     setExistingImages([]);
     setExistingSlides([]);
+    setDocxFile(null);
     setEditingId(null);
     setShowForm(false);
   };
@@ -89,6 +92,7 @@ export default function BlogAdmin() {
     setImageFile(null);
     setGalleryFiles([]);
     setSlideFiles([]);
+    setDocxFile(null);
     setEditingId(item._id);
     setShowForm(true);
   };
@@ -101,6 +105,13 @@ export default function BlogAdmin() {
       fd.append('title', form.title);
       fd.append('description', form.description);
       fd.append('category', form.category);
+
+      const isDocxArticle = docxFile && !editingId && form.category === 'Articles';
+
+      if (!isDocxArticle && !imageFile && !editingId) {
+        alert('Cover image is required');
+        return;
+      }
 
       if (imageFile) fd.append('image', imageFile);
 
@@ -121,6 +132,10 @@ export default function BlogAdmin() {
         fd.append('detailTitle', form.detailTitle);
         fd.append('existingSlides', JSON.stringify(existingSlides));
         slideFiles.forEach((f) => fd.append('slides', f));
+      }
+
+      if (isDocxArticle) {
+        fd.append('docx', docxFile);
       }
 
       if (editingId) {
@@ -200,7 +215,7 @@ export default function BlogAdmin() {
             {/* Common fields */}
             <div>
               <label style={labelStyle}>Title *</label>
-              <input name="title" value={form.title} onChange={handleChange} style={inputStyle} required />
+              <input name="title" value={form.title} onChange={handleChange} style={inputStyle} required={!docxFile} />
             </div>
 
             <div>
@@ -215,15 +230,22 @@ export default function BlogAdmin() {
             </div>
 
             <div>
-              <label style={labelStyle}>Cover Image {!editingId && '*'}</label>
+              <label style={labelStyle}>
+                Cover Image {!editingId && !docxFile && '*'}
+              </label>
               <input
                 type="file"
                 name="image"
                 accept="image/*"
                 onChange={(e) => setImageFile(e.target.files?.[0] || null)}
                 style={inputStyle}
-                required={!editingId}
+                required={!editingId && !docxFile}
               />
+              {docxFile && form.category === 'Articles' && (
+                <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: '#888' }}>
+                  Optional when importing Word — cover is taken from the document if it contains images.
+                </p>
+              )}
               {editingId && items.find((i) => i._id === editingId)?.image && (
                 <img
                   src={items.find((i) => i._id === editingId).image}
@@ -235,16 +257,32 @@ export default function BlogAdmin() {
 
             {/* Article-specific */}
             {form.category === 'Articles' && (
-              <div>
-                <label style={labelStyle}>Content (separate paragraphs with blank lines)</label>
-                <textarea
-                  name="content"
-                  value={form.content}
-                  onChange={handleChange}
-                  style={{ ...inputStyle, minHeight: '200px', resize: 'vertical' }}
-                  placeholder="Write your article content here. Each paragraph should be separated by a blank line."
-                />
-              </div>
+              <>
+                <div>
+                  <label style={labelStyle}>Import from Word (.docx)</label>
+                  <input
+                    type="file"
+                    accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={(e) => setDocxFile(e.target.files?.[0] || null)}
+                    style={inputStyle}
+                  />
+                  <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: '#888' }}>
+                    Optional — uploads text and images from the document in order. Leave empty to write manually below.
+                  </p>
+                </div>
+                {!docxFile && (
+                  <div>
+                    <label style={labelStyle}>Content (separate paragraphs with blank lines)</label>
+                    <textarea
+                      name="content"
+                      value={form.content}
+                      onChange={handleChange}
+                      style={{ ...inputStyle, minHeight: '200px', resize: 'vertical' }}
+                      placeholder="Write your article content here. Each paragraph should be separated by a blank line."
+                    />
+                  </div>
+                )}
+              </>
             )}
 
             {/* Image-specific */}
@@ -365,7 +403,7 @@ export default function BlogAdmin() {
                   fontWeight: '600',
                 }}
               >
-                {loading ? 'Saving...' : editingId ? 'Update' : 'Create'}
+                {loading ? 'Saving...' : editingId ? 'Update' : docxFile ? 'Create from Word' : 'Create'}
               </button>
               <button
                 type="button"
@@ -416,7 +454,11 @@ export default function BlogAdmin() {
                 <p style={{ margin: '0 0 12px', color: '#999', fontSize: '0.75rem' }}>
                   {new Date(item.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   {item.category === 'Images' && item.images?.length > 0 && ` • ${item.images.length} images`}
-                  {item.category === 'Presentations' && item.slides?.length > 0 && ` • ${item.slides.length} slides`}
+                  {item.category === 'Presentations' && (
+                    (item.slideItems?.length
+                      ? ` • ${item.slideItems.length} blocks`
+                      : item.slides?.length > 0 && ` • ${item.slides.length} slides`)
+                  )}
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button

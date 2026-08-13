@@ -1,8 +1,8 @@
 import React from 'react';
 import '../styles/about.css'
 import Header from "../assets/Experiencestore.png"
-import weAreYuktiHero from "../assets/we-are-yukti-hero.png";
-import image2 from "../assets/image2.png";
+import weAreYuktiHero from "../assets/we-are-yukti-dog.png";
+import whyChooseWorkshop from "../assets/why-choose-yukti-workshop.png";
 
 const About = () => {
   return (
@@ -49,7 +49,7 @@ const About = () => {
           <div className="we-are-image">
             <img
               src={weAreYuktiHero}
-              alt="Yukti brand logo"
+              alt="Yukti product with companion"
               width={800}
               height={800}
               className="furniture-image we-are-yukti-hero"
@@ -113,8 +113,8 @@ const About = () => {
           </div>
           <div className="why-choose-image">
             <img
-              src={image2}
-              alt="Yukti wooden cabinet"
+              src={whyChooseWorkshop}
+              alt="Yukti chair prototype in workshop"
               width={600}
               height={600}
               className="furniture-image"

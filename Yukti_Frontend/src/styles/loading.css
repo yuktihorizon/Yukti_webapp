@@ -5,8 +5,9 @@
   width: 100%;
   min-height: 60vh;
   padding: clamp(1rem, 4vw, 2.5rem);
-  background: #000;
+  background: transparent;
   box-sizing: border-box;
+  pointer-events: none;
 }
 
 .loading-fullscreen {
@@ -15,6 +16,11 @@
   min-height: 100dvh;
   min-height: 100vh;
   z-index: 9999;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
 }
 
 .loading-video-wrap {
@@ -23,11 +29,14 @@
   justify-content: center;
   width: min(85vw, 85vh, 560px);
   max-width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 16 / 9;
 }
 
 .loading-fullscreen .loading-video-wrap {
-  width: min(80vw, 80vh, 720px);
+  width: min(92vw, 70vh);
+  height: auto;
+  max-width: 960px;
+  aspect-ratio: 16 / 9;
 }
 
 .loading-video {
@@ -37,6 +46,7 @@
   max-height: 100%;
   object-fit: contain;
   display: block;
+  background: transparent;
 }
 
 /* Tablet */
@@ -44,34 +54,26 @@
   .loading-video-wrap {
     width: min(65vw, 65vh, 520px);
   }
-
-  .loading-fullscreen .loading-video-wrap {
-    width: min(70vw, 70vh, 620px);
-  }
 }
 
-/* Desktop */
+/* Desktop inline fallback (route suspense) */
 @media (min-width: 1024px) {
-  .loading-video-wrap {
+  .loading-overlay:not(.loading-fullscreen) .loading-video-wrap {
     width: min(50vw, 50vh, 600px);
-  }
-
-  .loading-fullscreen .loading-video-wrap {
-    width: min(55vw, 55vh, 760px);
   }
 }
 
 /* Small phones */
 @media (max-width: 480px) {
-  .loading-overlay {
+  .loading-overlay:not(.loading-fullscreen) {
     padding: 1rem;
   }
 
-  .loading-video-wrap {
-    width: min(88vw, 75vh, 400px);
+  .loading-overlay:not(.loading-fullscreen) .loading-video-wrap {
+    width: min(92vw, 55vh, 400px);
   }
 
   .loading-fullscreen .loading-video-wrap {
-    width: min(90vw, 78vh, 480px);
+    width: min(96vw, 50vh);
   }
 }

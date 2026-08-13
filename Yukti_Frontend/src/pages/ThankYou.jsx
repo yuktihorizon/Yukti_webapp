@@ -67,7 +67,7 @@ const ThankYou = () => {
                 </div>
                 <div className="product-details">
                   <h3 className="product-name">{item.name}</h3>
-                  <p className="product-price">₹{item.price.toLocaleString()}</p>
+                  <p className="product-price">₹{item.price.toLocaleString()} <span className="price-gst">(GST inc.)</span></p>
                 </div>
               </div>
             ))}
