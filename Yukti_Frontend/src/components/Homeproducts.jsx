@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react"
+import { useState, useMemo } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
-import axios from "axios"
+import { useCatalog } from "../context/CatalogContext"
 import "../styles/Homeproducts.css"
 
 function ProductBlock({ product, index, isServiceCategory, onBuyNow }) {
@@ -48,95 +48,45 @@ function ProductBlock({ product, index, isServiceCategory, onBuyNow }) {
 }
 
 export default function ProductSlider() {
-  const [categories, setCategories] = useState([])
+  const { products, categories: categoriesFromAPI, loading, error: fetchError, refetch } = useCatalog()
   const [currentCategoryIndex, setCurrentCategoryIndex] = useState(0)
   const [direction, setDirection] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
   const navigate = useNavigate()
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  const categories = useMemo(() => {
+    const consumerProducts = products.filter((product) => {
+      const mainCat = product.category?.mainCategory
+      return !mainCat || mainCat === "Consumer Products"
+    })
 
-  useEffect(() => {
-    if (!API_BASE_URL) {
-      setFetchError(true)
-      setLoading(false)
-      return
-    }
+    const catMap = categoriesFromAPI
+      .filter((cat) => cat.mainCategory === "Consumer Products" || !cat.mainCategory)
+      .reduce((acc, cat) => {
+        acc[cat._id] = { id: cat._id, name: cat.name, products: [] }
+        return acc
+      }, {})
 
-    let cancelled = false
-
-    const fetchData = async () => {
-      const MAX_RETRIES = 3
-      const RETRY_DELAY_MS = 800
-
-      setLoading(true)
-      setFetchError(false)
-
-      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-        try {
-          const [catRes, prodRes] = await Promise.all([
-            axios.get(`${API_BASE_URL}/category/getcategories`),
-            axios.get(`${API_BASE_URL}/products/getproducts`),
-          ])
-
-          if (cancelled) return
-
-          const categoriesFromAPI = catRes.data.filter((cat) => cat.name.toLowerCase() !== "all")
-          const products = prodRes.data.filter((product) => {
-            const mainCat = product.category?.mainCategory
-            return !mainCat || mainCat === "Consumer Products"
-          })
-
-          const catMap = categoriesFromAPI
-            .filter((cat) => cat.mainCategory === "Consumer Products" || !cat.mainCategory)
-            .reduce((acc, cat) => {
-              acc[cat._id] = { id: cat._id, name: cat.name, products: [] }
-              return acc
-            }, {})
-
-          products.forEach((product) => {
-            const catId = product.category?._id || product.category
-            if (catMap[catId]) {
-              catMap[catId].products.push(product)
-            }
-          })
-
-          const sortByHomeOrder = (a, b) => {
-            const orderA = a.homeOrder > 0 ? a.homeOrder : Number.POSITIVE_INFINITY
-            const orderB = b.homeOrder > 0 ? b.homeOrder : Number.POSITIVE_INFINITY
-            if (orderA !== orderB) return orderA - orderB
-            return String(a.name || "").localeCompare(String(b.name || ""))
-          }
-
-          const finalList = Object.values(catMap)
-            .map((cat) => ({
-              ...cat,
-              products: [...cat.products].sort(sortByHomeOrder),
-            }))
-            .filter((cat) => cat.products.length > 0)
-          setCategories(finalList)
-          setCurrentCategoryIndex(0)
-          setLoading(false)
-          return
-        } catch (error) {
-          console.error(`Failed to fetch categories or products (attempt ${attempt}/${MAX_RETRIES})`, error)
-          if (attempt < MAX_RETRIES) {
-            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt))
-          } else if (!cancelled) {
-            setFetchError(true)
-            setLoading(false)
-          }
-        }
+    consumerProducts.forEach((product) => {
+      const catId = product.category?._id || product.category
+      if (catMap[catId]) {
+        catMap[catId].products.push(product)
       }
+    })
+
+    const sortByHomeOrder = (a, b) => {
+      const orderA = a.homeOrder > 0 ? a.homeOrder : Number.POSITIVE_INFINITY
+      const orderB = b.homeOrder > 0 ? b.homeOrder : Number.POSITIVE_INFINITY
+      if (orderA !== orderB) return orderA - orderB
+      return String(a.name || "").localeCompare(String(b.name || ""))
     }
 
-    fetchData()
-    return () => {
-      cancelled = true
-    }
-  }, [API_BASE_URL, retryCount])
+    return Object.values(catMap)
+      .map((cat) => ({
+        ...cat,
+        products: [...cat.products].sort(sortByHomeOrder),
+      }))
+      .filter((cat) => cat.products.length > 0)
+  }, [products, categoriesFromAPI])
 
   const currentCategory = categories[currentCategoryIndex] || { name: "", products: [] }
   const isServiceCategory =
@@ -177,7 +127,7 @@ export default function ProductSlider() {
     return (
       <div className="product-slider-container">
         <p>Unable to load products right now.</p>
-        <button type="button" className="buy" onClick={() => setRetryCount((n) => n + 1)}>
+        <button type="button" className="buy" onClick={() => refetch()}>
           Try again
         </button>
       </div>

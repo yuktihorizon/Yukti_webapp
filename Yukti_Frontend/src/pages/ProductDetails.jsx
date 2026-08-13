@@ -1,8 +1,9 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "../styles/productDetails.css";
 import { useCart } from "../pages/CartContext";
+import { useCatalog } from "../context/CatalogContext";
 import { toast } from "react-toastify";
 import chairsVideo from "../assets/chairvideo.mp4";
 
@@ -67,44 +68,85 @@ const normalizeProductAttributes = (data, formatFieldLabel) => {
 const ProductDetail = () => {
   const { id: productId } = useParams();
   const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
-  const [selectedColor, setSelectedColor] = useState("white");
+  const location = useLocation();
+  const { products, loading: catalogLoading } = useCatalog();
+  const [product, setProduct] = useState(location.state?.product?._id === productId ? location.state.product : null);
+  const [selectedColor, setSelectedColor] = useState(product?.colors?.[0] || "white");
   const [expandedSection, setExpandedSection] = useState(null);
-  const [mainImage, setMainImage] = useState("/placeholder.svg");
+  const [mainImage, setMainImage] = useState(
+    product?.thumbnails?.[0] || product?.images?.[0] || "/placeholder.svg"
+  );
   const [showImageModal, setShowImageModal] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const { addToCart } = useCart();
-
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+  const applyProduct = (foundProduct) => {
+    setProduct(foundProduct);
+    setSelectedColor(foundProduct.colors?.[0] || "white");
+    if (foundProduct.thumbnails?.length > 0) {
+      setMainImage(foundProduct.thumbnails[0]);
+    } else if (foundProduct.images?.length > 0) {
+      setMainImage(foundProduct.images[0]);
+    } else {
+      setMainImage("/placeholder.svg");
+    }
+    setLoadError(false);
+  };
+
   useEffect(() => {
     if (!productId) return;
+
+    const fromState = location.state?.product;
+    if (fromState?._id === productId) {
+      applyProduct(fromState);
+      return;
+    }
+
+    const fromCatalog = products.find((p) => p._id === productId);
+    if (fromCatalog) {
+      applyProduct(fromCatalog);
+      return;
+    }
+
+    if (catalogLoading) return;
+    if (!API_BASE_URL) {
+      setLoadError(true);
+      return;
+    }
+
+    let cancelled = false;
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/products/getproducts`);
-        const allProducts = response.data;
-        const foundProduct = allProducts.find((p) => p._id === productId);
-        if (!foundProduct) return navigate("/");
-
-        setProduct(foundProduct);
-        setSelectedColor(foundProduct.colors?.[0] || "white");
-
-        // Use first thumbnail or fallback to first image
-        if (foundProduct.thumbnails?.length > 0) {
-          setMainImage(foundProduct.thumbnails[0]);
-        } else if (foundProduct.images?.length > 0) {
-          setMainImage(foundProduct.images[0]);
-        } else {
-          setMainImage("/placeholder.svg");
-        }
+        const response = await axios.get(`${API_BASE_URL}/products/getproducts/${productId}`, {
+          timeout: 15000,
+        });
+        if (cancelled) return;
+        if (response.data) applyProduct(response.data);
+        else setLoadError(true);
       } catch (error) {
         console.error("Error fetching product:", error);
-        navigate("/");
+        if (!cancelled) setLoadError(true);
       }
     };
 
     fetchProduct();
-  }, [productId, navigate, API_BASE_URL]);
+    return () => {
+      cancelled = true;
+    };
+  }, [productId, products, catalogLoading, location.state, API_BASE_URL]);
+
+  if (loadError && !product) {
+    return (
+      <div className="product-container">
+        <p>Unable to load this product right now.</p>
+        <button type="button" onClick={() => navigate("/allproducts")}>
+          Back to catalogue
+        </button>
+      </div>
+    );
+  }
 
   if (!product) return <div className="product-container">Loading...</div>;
 

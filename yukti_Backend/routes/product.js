@@ -4,7 +4,10 @@ const { createProduct, getProducts, getProductById } = require('../controllers/p
 
 const router = express.Router();
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: 8 * 1024 * 1024, files: 6 },
+});
 
 
 router.post('/createproducts', upload.fields([{ name: 'images', maxCount: 5 }]), createProduct);

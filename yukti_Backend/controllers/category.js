@@ -34,9 +34,10 @@ exports.getCategories = async (req, res) => {
   try {
     const { mainCategory } = req.query;
     const query = mainCategory ? { mainCategory: mainCategory.trim() } : {};
-    const categories = await Category.find(query).sort('name');
+    const categories = await Category.find(query).sort('name').lean().maxTimeMS(8000);
     res.json(categories);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch categories' });
   }
 };

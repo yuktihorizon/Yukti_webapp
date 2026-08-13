@@ -176,19 +176,28 @@ exports.getProducts = async (req, res) => {
       query.category = { $in: matchingCategories.map((c) => c._id) };
     }
 
-    const products = await Product.find(query).limit(parseInt(limit) || 0).populate('category');
+    const products = await Product.find(query)
+      .limit(parseInt(limit, 10) || 0)
+      .populate('category')
+      .lean()
+      .maxTimeMS(10000);
     res.json(products);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 };
 
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id)
+      .populate('category')
+      .lean()
+      .maxTimeMS(10000);
     if (!product) return res.status(404).json({ error: 'Product not found' });
     res.json(product);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Failed to fetch product' });
   }
 };

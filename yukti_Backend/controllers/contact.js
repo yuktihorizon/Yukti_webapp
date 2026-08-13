@@ -76,22 +76,26 @@ exports.createContactMessage = async (req, res) => {
 
     await newMessage.save();
 
-    // 2. Send email to admin
-    await resend.emails.send({
-      from: 'YuktinewUser@resend.dev',
-      to: process.env.ADMIN_EMAIL,
-      subject: `New Contact Form Submission: ${subject}`,
-      html: `
-        <h3>New Contact Message</h3>
-        <p><strong>Name:</strong> ${firstName}${lastName ? ' ' + lastName : ''}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong><br>${message}</p>
-      `,
-    });
+    try {
+      if (process.env.ADMIN_EMAIL) {
+        await resend.emails.send({
+          from: 'YuktinewUser@resend.dev',
+          to: process.env.ADMIN_EMAIL,
+          subject: `New Contact Form Submission: ${subject}`,
+          html: `
+            <h3>New Contact Message</h3>
+            <p><strong>Name:</strong> ${firstName}${lastName ? ' ' + lastName : ''}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Phone:</strong> ${phone || 'N/A'}</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <p><strong>Message:</strong><br>${message}</p>
+          `,
+        });
+      }
+    } catch (emailErr) {
+      console.error('Contact email failed (message still saved):', emailErr);
+    }
 
-    // 3. Return success response
     res.status(201).json({
       _id: newMessage._id,
       firstName,

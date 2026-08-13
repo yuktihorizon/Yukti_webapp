@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import axios from "axios"
 import '../styles/products.css'
 import { useCart } from "../pages/CartContext";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useCatalog } from "../context/CatalogContext";
 
 const MAIN_CATEGORIES = [
   "Consumer Products",
@@ -16,19 +16,13 @@ const DIGITAL_PRODUCTS = "Digital Products"
 const INDUSTRIAL_PRODUCTS = "Industrial Products"
 
 const Products = () => {
-  const [categories, setCategories] = useState([])
-  const [products, setProducts] = useState([])
+  const { products, categories, loading, error: fetchError, refetch } = useCatalog()
   const [activeMainCategory, setActiveMainCategory] = useState("Consumer Products")
   const [activeCategory, setActiveCategory] = useState("all")
   const [sortBy, setSortBy] = useState("default")
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
   const { cartItems } = useCart();
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
   useEffect(() => {
     const main = searchParams.get("main")
@@ -45,54 +39,6 @@ const Products = () => {
       setActiveCategory("all")
     }
   }, [searchParams, navigate])
-
-  useEffect(() => {
-    if (!API_BASE_URL) {
-      setFetchError(true)
-      setLoading(false)
-      return
-    }
-
-    let cancelled = false
-
-    const fetchData = async () => {
-      const MAX_RETRIES = 3
-      const RETRY_DELAY_MS = 800
-
-      setLoading(true)
-      setFetchError(false)
-
-      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-        try {
-          const [catRes, prodRes] = await Promise.all([
-            axios.get(`${API_BASE_URL}/category/getcategories`),
-            axios.get(`${API_BASE_URL}/products/getproducts`)
-          ])
-
-          if (cancelled) return
-
-          const filteredCategories = catRes.data.filter((cat) => cat.name.toLowerCase() !== "all")
-          setCategories(filteredCategories)
-          setProducts(prodRes.data)
-          setLoading(false)
-          return
-        } catch (error) {
-          console.error(`Error fetching data (attempt ${attempt}/${MAX_RETRIES})`, error)
-          if (attempt < MAX_RETRIES) {
-            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt))
-          } else if (!cancelled) {
-            setFetchError(true)
-            setLoading(false)
-          }
-        }
-      }
-    }
-
-    fetchData()
-    return () => {
-      cancelled = true
-    }
-  }, [API_BASE_URL, retryCount])
 
   const handleMainCategoryClick = (mainCategory) => {
     if (mainCategory === DIGITAL_PRODUCTS) {
@@ -242,7 +188,7 @@ const Products = () => {
         ) : fetchError ? (
           <div className="shop-empty">
             <p>Unable to load products right now.</p>
-            <button type="button" onClick={() => setRetryCount((n) => n + 1)}>
+            <button type="button" onClick={() => refetch()}>
               Try again
             </button>
           </div>

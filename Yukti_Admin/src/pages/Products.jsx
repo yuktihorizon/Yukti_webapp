@@ -135,6 +135,8 @@ export default function Products() {
   const [items, setItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
+  const [listError, setListError] = useState(false);
   const [form, setForm] = useState({
     name: '',
     series: '',
@@ -165,8 +167,11 @@ export default function Products() {
     try {
       const { data } = await api.get('/products/getproducts');
       setItems(data);
+      setListError(false);
+      return true;
     } catch (e) {
       console.error('Failed to fetch products:', e);
+      return false;
     }
   };
 
@@ -179,9 +184,15 @@ export default function Products() {
     }
   };
 
-  useEffect(() => { 
-    fetchItems(); 
-    fetchCategories();
+  useEffect(() => {
+    const load = async () => {
+      setListLoading(true);
+      const ok = await fetchItems();
+      await fetchCategories();
+      if (!ok) setListError(true);
+      setListLoading(false);
+    };
+    load();
   }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -1524,7 +1535,28 @@ export default function Products() {
           ))}
         </div>
         
-        {filteredItems.length === 0 && (
+        {listLoading ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
+            <p>Loading products...</p>
+          </div>
+        ) : listError ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#666' }}>
+            <h3>Unable to load products</h3>
+            <p>The API may still be starting. Please try again.</p>
+            <button
+              type="button"
+              onClick={async () => {
+                setListLoading(true);
+                const ok = await fetchItems();
+                await fetchCategories();
+                if (!ok) setListError(true);
+                setListLoading(false);
+              }}
+            >
+              Try again
+            </button>
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div style={{ 
             textAlign: 'center', 
             padding: '60px 20px',
@@ -1538,7 +1570,7 @@ export default function Products() {
               }
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

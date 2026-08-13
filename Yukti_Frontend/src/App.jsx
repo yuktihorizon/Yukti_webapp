@@ -57,7 +57,7 @@ export default function App() {
         <Header />
         <ToastContainer position="top-right" autoClose={3000} />
         {!isLoading && (
-        <Suspense fallback={<Loading />}>
+        <Suspense fallback={<Loading simple />}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/allproducts" element={<Products/>} />

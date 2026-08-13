@@ -5,9 +5,13 @@ import { api } from '../lib/api';
 export default function Dashboard() {
   const [stats, setStats] = useState({ products: 0, spotlight: 0, contacts: 0, orders: 0 });
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const fetchStats = async () => {
+      setLoading(true);
+      setLoadError(false);
       try {
         const [productsRes, spotlightRes, contactsRes, ordersRes] = await Promise.all([
           api.get('/products/getproducts'),
@@ -23,12 +27,13 @@ export default function Dashboard() {
         });
       } catch (e) {
         console.error('Failed to fetch stats:', e);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
     };
     fetchStats();
-  }, []);
+  }, [retryCount]);
 
   if (loading) {
     return (
@@ -51,6 +56,21 @@ export default function Dashboard() {
             100% { transform: rotate(360deg); }
           }
         `}</style>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="admin-loading">
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ color: '#4b5563', fontSize: '16px', marginBottom: '12px' }}>
+            Unable to load dashboard. The API may still be starting.
+          </p>
+          <button type="button" onClick={() => setRetryCount((n) => n + 1)}>
+            Try again
+          </button>
+        </div>
       </div>
     );
   }

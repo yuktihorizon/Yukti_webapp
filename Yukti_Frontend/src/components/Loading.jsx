@@ -1,9 +1,17 @@
 import "../styles/loading.css";
 
-export default function Loading({ fullScreen = false, onFinish }) {
+export default function Loading({ fullScreen = false, onFinish, simple = false }) {
   const handleVideoEnd = () => {
     if (fullScreen && onFinish) onFinish();
   };
+
+  if (simple) {
+    return (
+      <div className={`loading-overlay ${fullScreen ? "loading-fullscreen" : ""}`}>
+        <p className="loading-simple-text">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`loading-overlay ${fullScreen ? "loading-fullscreen" : ""}`}>

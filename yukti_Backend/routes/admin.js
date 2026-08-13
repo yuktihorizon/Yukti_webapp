@@ -13,7 +13,10 @@ const { createBlog, updateBlog, deleteBlog, importDocx } = require('../controlle
 const requireAdmin = require('../middlewares/requireAdmin');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024, files: 62 },
+});
 
 // Admin Auth
 router.post('/login', adminLogin);
