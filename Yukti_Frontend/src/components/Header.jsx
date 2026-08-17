@@ -2,7 +2,7 @@ import Navbar from "./Navbar";
 
 const Header = () => {
   return (
-    <header className="fixed top-0 left-0 w-full bg-black text-white z-10 border-b border-gray-700">
+    <header className="fixed top-0 left-0 w-full bg-black text-white z-[1000] border-b border-gray-700">
       <Navbar />
     </header>
   );

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
 import { useCatalog } from "../context/CatalogContext"
+import { isCustomCraftProduct } from "../utils/product"
 import "../styles/Homeproducts.css"
 
 function ProductBlock({ product, index, isServiceCategory, onBuyNow }) {
@@ -12,38 +13,28 @@ function ProductBlock({ product, index, isServiceCategory, onBuyNow }) {
       ? product.images[0]
       : "/placeholder.svg"
 
-  const textBlock = (
-    <div className="product-text">
-      {product.series && <h2 className="series">{product.series}</h2>}
-      <h3 className="name">{product.name}</h3>
-      {product.description && (
-        <div className="description">
-          {product.description.split("\n").map((line, idx) => (
-            <p key={idx}>{line}</p>
-          ))}
-        </div>
-      )}
-      <button className="buy" onClick={() => onBuyNow(product)}>
-        {isServiceCategory ? "Get a quote" : "Buy Now"}
-      </button>
-    </div>
-  )
-
-  const imageBlock = (
-    <div className="product-image">
-      <img
-        src={imageSrc}
-        alt={product.name}
-        className="w-full h-auto object-cover"
-      />
-    </div>
-  )
-
   return (
-    <>
-      {textFirst ? textBlock : imageBlock}
-      {textFirst ? imageBlock : textBlock}
-    </>
+    <article
+      className={`product-card ${textFirst ? "product-card--text-first" : "product-card--image-first"}`}
+    >
+      <div className="product-image">
+        <img src={imageSrc} alt={product.name} />
+      </div>
+      <div className="product-text">
+        {product.series && <h2 className="series">{product.series}</h2>}
+        <h3 className="name">{product.name}</h3>
+        {product.description && (
+          <div className="description">
+            {product.description.split("\n").map((line, idx) => (
+              <p key={idx}>{line}</p>
+            ))}
+          </div>
+        )}
+        <button className="buy" onClick={() => onBuyNow(product)}>
+          {isServiceCategory ? "Get a quote" : isCustomCraftProduct(product) ? "Enquire" : "Buy Now"}
+        </button>
+      </div>
+    </article>
   )
 }
 

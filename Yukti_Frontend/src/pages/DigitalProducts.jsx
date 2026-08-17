@@ -8,7 +8,7 @@ import digitalHero from "../assets/digital-products-hero.png";
 import capabilityVisualization from "../assets/digital-capability-visualization.jpg";
 import capabilityManagement from "../assets/digital-capability-management.jpg";
 import capabilityInsights from "../assets/digital-capability-insights.jpg";
-import formBg from "../assets/concepts-hero.png";
+import formBg from "../assets/digital-form-bg.png";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -25,22 +25,19 @@ const INTEREST_OPTIONS = [
 
 const CAPABILITIES = [
   {
-    title: "Visualization",
-    description: "Bringing Ideas Into View Before They Move Into Production.",
+    title: "Virtual Reality",
     image: capabilityVisualization,
-    alt: "Immersive visualization with VR",
+    alt: "Immersive virtual reality experience",
   },
   {
-    title: "Management",
-    description: "Creating Structure Around Complex Workflows And Processes.",
+    title: "Ads, corporate films, Renders & walkthrough",
     image: capabilityManagement,
-    alt: "Design management with 3D walkthroughs and renders",
+    alt: "Ads, corporate films, renders and walkthrough",
   },
   {
-    title: "Insights",
-    description: "Revealing Patterns And Opportunities Through Meaningful Data.",
+    title: "Custom programs & other digital services",
     image: capabilityInsights,
-    alt: "Data insights and analytics dashboard",
+    alt: "Custom programs and other digital services",
   },
 ];
 
@@ -188,7 +185,6 @@ export default function DigitalProducts() {
                 <div className="digital-capability-overlay" aria-hidden="true" />
                 <div className="digital-capability-content">
                   <h3>{item.title}</h3>
-                  <p>{item.description}</p>
                 </div>
               </article>
             ))}

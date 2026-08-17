@@ -1,13 +1,7 @@
-/* Base Header Styling */
+/* Base Header Styling — parent Header is already fixed full-width */
 .site-header {
-    background-color: black;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: transparent;
     width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    transition: all 0.3s ease;
 }
 
 .site-header a,
@@ -18,19 +12,22 @@
 /* Header Container */
 .header-container {
     display: flex;
-    height: 64px;
+    height: 72px;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    max-width: 1200px;
+    padding: 0 64px;
+    max-width: 1600px;
     margin: 0 auto;
+    gap: 48px;
+    width: 100%;
 }
 
 /* Navigation Menu */
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 40px;
+    justify-content: center;
+    flex: 1;
+    gap: 8px 28px;
     transition: all 0.3s ease;
 }
 
@@ -41,7 +38,7 @@
     font-size: 14px;
     font-weight: 500;
     transition: all 0.3s ease;
-    padding: 8px 12px;
+    padding: 8px 4px;
     border-radius: 6px;
     white-space: nowrap;
 }
@@ -64,6 +61,7 @@
     gap: 10px;
     text-decoration: none;
     transition: transform 0.3s ease;
+    flex-shrink: 0;
 }
 
 .logo-container:hover {
@@ -76,17 +74,33 @@
 }
 
 .logo-horizon {
-    height: 40px;
-    max-width: min(280px, 48vw);
+    height: 36px;
+    max-width: 220px;
     width: auto;
     object-fit: contain;
 }
 
 /* Header Actions */
-.header-actions {
+.header-actions,
+.header-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    flex: 1;
+    min-width: 0;
+    gap: 32px;
+}
+
+.header-cart {
+    position: relative;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+@media (min-width: 769px) {
+    .header-cart .cart-badge {
+        top: 2px;
+        right: 2px;
+    }
 }
 
 /* Icon Buttons */
@@ -213,21 +227,43 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 1280px) {
+    .header-container {
+        padding: 0 40px;
+        gap: 32px;
+    }
+
     .nav-menu {
+        gap: 8px 18px;
+    }
+
+    .nav-link {
+        font-size: 13px;
+        padding: 8px 2px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .header-container {
+        padding: 0 28px;
         gap: 20px;
+    }
+
+    .nav-menu {
+        gap: 6px 12px;
     }
     
     .nav-link {
-        font-size: 13px;
-        padding: 6px 10px;
+        font-size: 12px;
+        padding: 6px 2px;
     }
 }
 
 @media (max-width: 768px) {
     .header-container {
-        padding: 0 12px;
+        padding: 0 16px;
         height: 60px;
+        gap: 12px;
     }
     
     .logo {
@@ -243,16 +279,38 @@
     .menu-toggle {
         display: flex;
     }
+
+    .header-cart.icon-button {
+        width: auto;
+        min-width: 44px;
+        min-height: 44px;
+        padding: 8px;
+        justify-content: center;
+        border-bottom: none;
+    }
+
+    .header-cart .cart-badge {
+        top: 4px !important;
+        right: 2px !important;
+    }
     
+    .header-right {
+        flex: 1;
+        gap: 4px;
+        justify-content: flex-end;
+    }
+
     /* Hide desktop menu */
     .nav-menu {
         display: none;
+        flex: none;
         position: fixed;
         top: 60px;
         left: 0;
         right: 0;
         background: black;
         flex-direction: column;
+        justify-content: flex-start;
         padding: 20px;
         gap: 0;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -321,8 +379,9 @@
 
 @media (max-width: 480px) {
     .header-container {
-        padding: 0 8px;
+        padding: 0 14px;
         height: 56px;
+        gap: 8px;
     }
 
     .logo {
@@ -354,6 +413,12 @@
     
     .icon-button {
         padding: 10px 16px;
+    }
+
+    .header-cart.icon-button {
+        padding: 8px;
+        min-width: 40px;
+        min-height: 40px;
     }
     
     .menu-toggle {

@@ -6,6 +6,7 @@ import { useCart } from "../pages/CartContext";
 import { useCatalog } from "../context/CatalogContext";
 import { toast } from "react-toastify";
 import chairsVideo from "../assets/chairvideo.mp4";
+import { isCustomCraftProduct } from "../utils/product";
 
 /** YouTube embed URL with autoplay, or null if not a recognized YouTube link. */
 function getYouTubeEmbedSrc(raw) {
@@ -78,7 +79,9 @@ const ProductDetail = () => {
   );
   const [showImageModal, setShowImageModal] = useState(false);
   const [loadError, setLoadError] = useState(false);
-  const { addToCart } = useCart();
+  const [inquiry, setInquiry] = useState({ phone: "", requirement: "" });
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
+  const { addToCart, cartItems } = useCart();
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -149,6 +152,69 @@ const ProductDetail = () => {
   }
 
   if (!product) return <div className="product-container">Loading...</div>;
+
+  const isCustomCraft = isCustomCraftProduct(product);
+  const isInCart = cartItems.some((item) => item._id === product._id);
+
+  const handleInquiryChange = (e) => {
+    const { name, value } = e.target;
+    setInquiry((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleInquirySubmit = async (e) => {
+    e.preventDefault();
+    const phone = inquiry.phone.trim();
+    const requirement = inquiry.requirement.trim();
+
+    if (!phone || !requirement) {
+      toast.error("Please share your requirement and contact number.");
+      return;
+    }
+
+    if (phone.replace(/\D/g, "").length < 8) {
+      toast.error("Please enter a valid contact number.");
+      return;
+    }
+
+    if (!API_BASE_URL) {
+      toast.error("Form is not configured. Please try again later.");
+      return;
+    }
+
+    setInquirySubmitting(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/contact/createmessages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: "Custom Craft Inquiry",
+          lastName: "",
+          email: "inquiry@yuktihorizon.com",
+          phone,
+          subject: `Custom Craft Inquiry - ${product.name}`,
+          message: [
+            `Source: Product page`,
+            `Product: ${product.name}`,
+            product.series ? `Series: ${product.series}` : null,
+            `Phone: ${phone}`,
+            `Requirement: ${requirement}`,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to submit");
+
+      toast.success("Inquiry sent. We'll contact you shortly.");
+      setInquiry({ phone: "", requirement: "" });
+    } catch (error) {
+      console.error("Custom craft inquiry failed:", error);
+      toast.error("Failed to send inquiry. Please try again.");
+    } finally {
+      setInquirySubmitting(false);
+    }
+  };
 
   const categoryName =
     (typeof product.category === "object" ? product.category.name : product.category || "").toLowerCase();
@@ -393,9 +459,41 @@ const ProductDetail = () => {
         </div>
         )}
 
+      {isCustomCraft ? (
+        <form className="custom-craft-form" onSubmit={handleInquirySubmit}>
+          <h3>Tell us about your requirement</h3>
+          <p>This piece is made to order. Share a few details and we will get back to you.</p>
+          <label htmlFor="custom-craft-requirement">Your requirement</label>
+          <textarea
+            id="custom-craft-requirement"
+            name="requirement"
+            rows={4}
+            placeholder="Size, finish, quantity, or anything else we should know"
+            value={inquiry.requirement}
+            onChange={handleInquiryChange}
+            required
+            minLength={5}
+          />
+          <label htmlFor="custom-craft-phone">Contact number</label>
+          <input
+            id="custom-craft-phone"
+            type="tel"
+            name="phone"
+            placeholder="Your phone number"
+            value={inquiry.phone}
+            onChange={handleInquiryChange}
+            required
+            minLength={8}
+          />
+          <button type="submit" className="add-to-cart-btn" disabled={inquirySubmitting}>
+            {inquirySubmitting ? "Sending..." : "Send inquiry"}
+          </button>
+        </form>
+      ) : (
       <button
-  className="add-to-cart-btn"
+  className={`add-to-cart-btn${isInCart ? " added" : ""}`}
   onClick={() => {
+    if (isInCart) return;
     addToCart({
       _id: product._id,
       name: product.name,
@@ -406,8 +504,9 @@ const ProductDetail = () => {
     toast.success(`${product.name} added to cart!`);
   }}
 >
-  Add to cart
+  {isInCart ? "Added to cart" : "Add to cart"}
 </button>
+      )}
       </div>
     </div>
 

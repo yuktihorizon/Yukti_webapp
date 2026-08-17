@@ -302,8 +302,8 @@
   
   .add-to-cart-btn {
     padding: 15px 30px;
-    background-color: white;
-    border: 1px solid #333;
+    background-color: #111111;
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 30px;
     font-size: 16px;
     font-weight: 500;
@@ -311,13 +311,87 @@
   /* So the button appears mid-column, not stuck at bottom */
   margin-top: 64px;
     align-self: flex-end;
-    transition: all 0.3s ease;
-  color: #111111;
-  }
-  
-  .add-to-cart-btn:hover {
-  background-color: #111111;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   color: #ffffff;
+  }
+
+  .add-to-cart-btn.added {
+    background-color: #ffffff;
+    color: #111111;
+    border-color: #ffffff;
+    cursor: default;
+  }
+
+  @media (hover: hover) {
+    .add-to-cart-btn:hover:not(.added) {
+      background-color: #2a2a2a;
+    }
+  }
+
+  .custom-craft-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+    width: 100%;
+    max-width: 420px;
+    align-self: flex-end;
+  }
+
+  .custom-craft-form h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .custom-craft-form p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #d4d4d4;
+    margin: 0 0 8px 0;
+  }
+
+  .custom-craft-form label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #f5f5f5;
+  }
+
+  .custom-craft-form textarea,
+  .custom-craft-form input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+
+  .custom-craft-form textarea::placeholder,
+  .custom-craft-form input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  .custom-craft-form textarea:focus,
+  .custom-craft-form input:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .custom-craft-form .add-to-cart-btn {
+    margin-top: 8px;
+    align-self: stretch;
+    width: 100%;
+  }
+
+  .custom-craft-form .add-to-cart-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
   }
   
   @media (max-width: 768px) {
@@ -351,6 +425,11 @@
     .add-to-cart-btn {
       align-self: stretch;
       width: 100%;
+    }
+
+    .custom-craft-form {
+      align-self: stretch;
+      max-width: none;
     }
   
     .thumbnail-container {

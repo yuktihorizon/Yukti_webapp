@@ -3,6 +3,7 @@ import '../styles/products.css'
 import { useCart } from "../pages/CartContext";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useCatalog } from "../context/CatalogContext";
+import { isCustomCraftProduct } from "../utils/product";
 
 const MAIN_CATEGORIES = [
   "Consumer Products",
@@ -218,7 +219,9 @@ const Products = () => {
                   )}
                   <div className="product-card-footer">
                     <p className="product-price">&#8377; {product.price?.toLocaleString("en-IN")} <span className="price-gst">(GST inc.)</span></p>
-                    <span className="product-card-cta">View details</span>
+                    <span className="product-card-cta">
+                      {isCustomCraftProduct(product) ? "Enquire" : "View details"}
+                    </span>
                   </div>
                 </div>
               </Link>

@@ -19,95 +19,103 @@ const Navbar = () => {
     setMenuOpen(false);
   };
 
+  const cartCount = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
+
   return (
-    <header className="site-header">
+    <div className="site-header">
       <div className="header-container">
         <Link to="/" className="logo-container" onClick={handleLinkClick}>
           <img src={headerLogo} alt="Yukti Horizon" className="logo logo-horizon" />
         </Link>
 
-        {/* Mobile Hamburger Menu */}
-        <button 
-          className="menu-toggle" 
-          onClick={handleMenuToggle}
-          aria-label="Toggle navigation menu"
-          aria-expanded={menuOpen}
-        >
-          <span className={`hamburger-line ${menuOpen ? 'open' : ''}`}></span>
-          <span className={`hamburger-line ${menuOpen ? 'open' : ''}`}></span>
-          <span className={`hamburger-line ${menuOpen ? 'open' : ''}`}></span>
-        </button>
-
-        {/* Navigation Menu */}
-        <nav className={`nav-menu ${menuOpen ? "active" : ""}`}>
-          <Link 
-            to="/allproducts" 
-            className="nav-link" 
-            onClick={handleLinkClick}
-          >
-            All Products
-          </Link>
-          {location.pathname !== "/" && (
+        <div className="header-right">
+          {/* Navigation Menu */}
+          <nav className={`nav-menu ${menuOpen ? "active" : ""}`}>
             <Link 
-              to="/service" 
+              to="/allproducts" 
               className="nav-link" 
               onClick={handleLinkClick}
             >
-              Our Services
+              All Products
             </Link>
-          )}
-          <Link 
-            to="/experience-store" 
-            className="nav-link" 
-            onClick={handleLinkClick}
-          >
-            Our Experience Store
-          </Link>
-          <Link 
-            to="/about" 
-            className="nav-link" 
-            onClick={handleLinkClick}
-          >
-            About
-          </Link>
-          <Link 
-            to="/spotlight" 
-            className="nav-link" 
-            onClick={handleLinkClick}
-          >
-            Creative Spotlight
-          </Link>
-          {location.pathname !== "/" && (
+            {location.pathname !== "/" && (
+              <Link 
+                to="/service" 
+                className="nav-link" 
+                onClick={handleLinkClick}
+              >
+                Our Services
+              </Link>
+            )}
             <Link 
-              to="/blog" 
+              to="/experience-store" 
               className="nav-link" 
               onClick={handleLinkClick}
             >
-              Our Concepts
+              Our Experience Store
             </Link>
-          )}
-          
+            <Link 
+              to="/about" 
+              className="nav-link" 
+              onClick={handleLinkClick}
+            >
+              About
+            </Link>
+            <Link 
+              to="/spotlight" 
+              className="nav-link" 
+              onClick={handleLinkClick}
+            >
+              Creative Spotlight
+            </Link>
+            {location.pathname !== "/" && (
+              <Link 
+                to="/blog" 
+                className="nav-link" 
+                onClick={handleLinkClick}
+              >
+                Our Concepts
+              </Link>
+            )}
+            <Link 
+              to="/contactus" 
+              className="nav-link" 
+              onClick={handleLinkClick}
+            >
+              Get in Touch
+            </Link>
+          </nav>
 
-          {/* Cart Button */}
           <Link 
             to="/cart" 
-            className="icon-button" 
+            className="icon-button header-cart" 
             onClick={handleLinkClick}
-            style={{ position: 'relative' }}
-            aria-label="Shopping cart"
+            aria-label={cartCount > 0 ? `Shopping cart, ${cartCount} items` : "Shopping cart"}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
               <line x1="3" y1="6" x2="21" y2="6" />
               <path d="M16 10a4 4 0 0 1-8 0" />
             </svg>
-            {cartItems.length > 0 && (
-              <span className="cart-badge" aria-label={`${cartItems.length} items in cart`}>
-                {cartItems.length}
+            {cartCount > 0 && (
+              <span className="cart-badge" aria-label={`${cartCount} items in cart`}>
+                {cartCount}
               </span>
             )}
           </Link>
-        </nav>
+
+          {/* Mobile Hamburger Menu */}
+          <button 
+            className="menu-toggle" 
+            onClick={handleMenuToggle}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+          >
+            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`}></span>
+            <span className={`hamburger-line ${menuOpen ? 'open' : ''}`}></span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu Overlay */}
@@ -118,7 +126,7 @@ const Navbar = () => {
           aria-hidden="true"
         ></div>
       )}
-    </header>
+    </div>
   );
 };
 

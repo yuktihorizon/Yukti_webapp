@@ -34,6 +34,7 @@ function Footer() {
               className="social-link"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Instagram"
             >
               <svg
                 width="20"
@@ -55,6 +56,7 @@ function Footer() {
               className="social-link"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Facebook"
             >
               <svg
                 width="20"
@@ -74,6 +76,7 @@ function Footer() {
               className="social-link"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="Twitter"
             >
               <svg
                 width="20"
@@ -89,27 +92,31 @@ function Footer() {
               </svg>
             </a>
           </div>
-          <div className="footer-bottom-right">
-            <div className="footer-links">
-              <div className="footer-links-column">
-                <h3 className="footer-links-title">About</h3>
-                <ul className="footer-links-list">
-                  <li>
-                    <Link to="/about" className="footer-link">Our Story</Link>
-                  </li>
-                </ul>
-              </div>
 
-              <div className="footer-links-column">
-                <h3 className="footer-links-title">Support</h3>
-                <ul className="footer-links-list">
-                  <li>
-                    <Link to="/contactus" className="footer-link">Contact Us</Link>
-                  </li>
-                </ul>
-              </div>
+          <nav className="footer-links" aria-label="Footer">
+            <div className="footer-links-column">
+              <h3 className="footer-links-title">About</h3>
+              <ul className="footer-links-list">
+                <li>
+                  <Link to="/about" className="footer-link">Our Story</Link>
+                </li>
+              </ul>
             </div>
+            <div className="footer-links-column">
+              <h3 className="footer-links-title">Support</h3>
+              <ul className="footer-links-list">
+                <li>
+                  <Link to="/contactus" className="footer-link">Contact Us</Link>
+                </li>
+              </ul>
+            </div>
+          </nav>
+
+          <div className="footer-legal">
             <p className="copyright">© {new Date().getFullYear()} Yukti. All rights reserved.</p>
+            <p className="footer-credits">
+              Designed by Delisha Godwal · Developed by Vibhor Kothari
+            </p>
           </div>
         </div>
       </div>

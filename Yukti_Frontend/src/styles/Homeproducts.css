@@ -65,17 +65,27 @@
 }
 
 .product-slider-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.product-card .product-image {
+  order: 1;
+}
+
+.product-card .product-text {
+  order: 2;
 }
 
 @media (min-width: 768px) {
-  .product-slider-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 2rem;
-  }
-
   .product-slider-grid--count-1 {
     max-width: 960px;
     margin: 0 auto;
@@ -84,6 +94,29 @@
   .product-slider-grid--count-2 {
     max-width: 1100px;
     margin: 0 auto;
+  }
+
+  .product-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .product-card--text-first .product-text {
+    order: 1;
+  }
+
+  .product-card--text-first .product-image {
+    order: 2;
+  }
+
+  .product-card--image-first .product-image {
+    order: 1;
+  }
+
+  .product-card--image-first .product-text {
+    order: 2;
   }
 }
 
@@ -184,7 +217,6 @@
   }
 
   .slider-header {
-    /* flex-direction: column; */
     align-items: flex-start;
     gap: 1rem;
   }
@@ -195,13 +227,39 @@
 
   .slider-controls {
     display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .product-slider-grid {
+    gap: 2rem;
+  }
+
+  .product-card {
+    gap: 0.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #2a2a2a;
+  }
+
+  .product-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .product-slider-grid .product-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-slider-grid .product-image img {
+    max-height: 280px;
+    object-fit: contain;
   }
 
   .product-text {
-    padding: 1rem 0;
+    padding: 0.25rem 0 0;
   }
 
   .name {
@@ -214,6 +272,7 @@
 
   .description {
     font-size: 0.9rem;
+    margin-bottom: 1.25rem;
   }
 
   .buy {
@@ -246,8 +305,12 @@
     text-align: center;
   }
 
+  .product-slider-grid .product-image img {
+    max-height: 240px;
+  }
+
   .product-text {
-    padding: 1rem 0.5rem;
+    padding: 0.15rem 0 0;
   }
 
   .slider-buttons {
