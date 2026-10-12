@@ -10,6 +10,12 @@ const {
   updateServicePage,
 } = require('../controllers/servicePage');
 const { createBlog, updateBlog, deleteBlog, importDocx } = require('../controllers/blog');
+const {
+  getAllCatalogues,
+  createCatalogue,
+  updateCatalogue,
+  deleteCatalogue,
+} = require('../controllers/catalogue');
 const requireAdmin = require('../middlewares/requireAdmin');
 
 const router = express.Router();
@@ -53,5 +59,18 @@ router.post('/blog/import-docx', requireAdmin, upload.fields([
 ]), importDocx);
 router.put('/blog/:id', requireAdmin, blogUpload, updateBlog);
 router.delete('/blog/:id', requireAdmin, deleteBlog);
+
+const catalogueUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 30 * 1024 * 1024, files: 2 },
+}).fields([
+  { name: 'pdf', maxCount: 1 },
+  { name: 'cover', maxCount: 1 },
+]);
+
+router.get('/catalogues', requireAdmin, getAllCatalogues);
+router.post('/catalogues', requireAdmin, catalogueUpload, createCatalogue);
+router.put('/catalogues/:id', requireAdmin, catalogueUpload, updateCatalogue);
+router.delete('/catalogues/:id', requireAdmin, deleteCatalogue);
 
 module.exports = router;

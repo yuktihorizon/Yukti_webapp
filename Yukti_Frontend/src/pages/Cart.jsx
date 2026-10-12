@@ -3,12 +3,21 @@ import { useCart} from '../pages/CartContext';
 import {useState,useEffect} from "react";
 import '../styles/cart.css';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { MapPin } from 'lucide-react';
+import {
+  getShippingSummary,
+  normalizePinCode,
+  OUTSIDE_NCR_SHIPPING_ESTIMATE,
+  readSavedPinCode,
+  savePinCode,
+} from '../data/ncrPinCodes';
 
 const Cart = () => {
     const navigate = useNavigate();
   const { cartItems, incrementQuantity, decrementQuantity, removeFromCart } = useCart();
   const [showReminderBanner, setShowReminderBanner] = useState(false);
-
+  const [pinCode, setPinCode] = useState(() => readSavedPinCode());
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -18,8 +27,22 @@ const Cart = () => {
   }, []);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = 500;
-  const total = subtotal + shipping;
+  const shippingInfo = getShippingSummary(pinCode);
+  const total = subtotal + shippingInfo.shipping;
+
+  const handlePinChange = (e) => {
+    setPinCode(savePinCode(e.target.value));
+  };
+
+  const handleCheckout = () => {
+    const pin = normalizePinCode(pinCode);
+    if (pin.length !== 6) {
+      toast.error('Enter your 6-digit delivery pin code to continue.');
+      return;
+    }
+    savePinCode(pin);
+    navigate('/checkoutpage', { state: { pinCode: pin } });
+  };
 
   return (
     <div className="cart-container">
@@ -68,13 +91,46 @@ const Cart = () => {
       </div>
 
       <div className="cart-right">
+        <div className={`cart-pin ${shippingInfo.status !== 'pending' ? `cart-pin--${shippingInfo.status}` : ''}`}>
+          <label className="cart-pin-label" htmlFor="cart-pin">Delivery pin</label>
+          <div className="cart-pin-field">
+            <MapPin size={16} strokeWidth={1.75} />
+            <input
+              id="cart-pin"
+              className="cart-pin-input"
+              type="text"
+              inputMode="numeric"
+              autoComplete="postal-code"
+              maxLength={6}
+              placeholder="000000"
+              value={pinCode}
+              onChange={handlePinChange}
+            />
+          </div>
+          {shippingInfo.status === 'ncr' && (
+            <p className="cart-pin-status">NCR · Rs. 1,000 shipping included</p>
+          )}
+          {shippingInfo.status === 'outside' && (
+            <p className="cart-pin-status">Billed separately · {OUTSIDE_NCR_SHIPPING_ESTIMATE}</p>
+          )}
+          {shippingInfo.status === 'pending' && (
+            <p className="cart-pin-status">Enter 6 digits to calculate shipping</p>
+          )}
+        </div>
+
         <div className="summary-row">
           <span>Subtotal</span>
           <span>Rs. {subtotal.toLocaleString()}</span>
         </div>
         <div className="summary-row">
           <span>Shipping</span>
-          <span>Rs. {shipping.toLocaleString()}</span>
+          <span>
+            {shippingInfo.status === 'pending'
+              ? '—'
+              : shippingInfo.status === 'ncr'
+                ? `Rs. ${shippingInfo.shipping.toLocaleString()}`
+                : 'Billed separately'}
+          </span>
         </div>
         <div className="summary-row total">
           <span>Total</span>
@@ -83,7 +139,7 @@ const Cart = () => {
 
         <button
           className="checkout-button"
-          onClick={() => navigate('/checkoutpage')}
+          onClick={handleCheckout}
         >
           Proceed to checkout
         </button>

@@ -145,57 +145,39 @@ export default function ServicePage() {
 
   if (loading) {
     return (
-      <div style={{ padding: 60, textAlign: 'center', color: '#666' }}>
-        Loading service page…
+      <div className="admin-loading">
+        <div style={{ textAlign: 'center' }}>
+          <div className="admin-spinner" />
+          Loading service page…
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div style={{
-        maxWidth: 1200,
-        margin: '0 auto 20px auto',
-        padding: '0 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
+    <div className="admin-page">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
         <div>
-          <h2 style={{ margin: 0, color: '#333' }}>Service Page Sections</h2>
-          <p style={{ margin: '4px 0 0 0', color: '#888', fontSize: 13 }}>
-            Add or edit the capability sections shown on the public Service page.
+          <h2 style={{ margin: 0, fontSize: 20 }}>Service page sections</h2>
+          <p style={{ margin: '6px 0 0', color: 'var(--muted)', fontSize: 13 }}>
+            Add or edit capability sections shown on the public Service page.
           </p>
         </div>
         <button
+          type="button"
+          className={`admin-btn ${showForm ? 'admin-btn-secondary' : 'admin-btn-primary'}`}
           onClick={() => {
             if (showForm) { resetForm(); } else { setShowForm(true); }
           }}
-          style={{
-            padding: '10px 20px',
-            background: showForm ? '#e5e5e5' : '#111111',
-            color: showForm ? '#111111' : '#ffffff',
-            border: '1px solid #111111',
-            borderRadius: '999px',
-            cursor: 'pointer',
-            fontWeight: '600',
-          }}
         >
-          {showForm ? 'Cancel' : 'Add Section'}
+          {showForm ? 'Cancel' : 'Add section'}
         </button>
       </div>
 
       {showForm && (
-        <div style={{
-          maxWidth: 800,
-          margin: '20px auto',
-          padding: '20px',
-          background: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        }}>
-          <h3 style={{ margin: '0 0 20px 0', color: '#333' }}>
-            {editingIndex != null ? 'Edit Section' : 'Add New Section'}
+        <div className="form-panel" style={{ maxWidth: 800 }}>
+          <h3 style={{ margin: '0 0 20px', fontSize: 18 }}>
+            {editingIndex != null ? 'Edit section' : 'Add new section'}
           </h3>
           <div style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -509,11 +491,12 @@ const hintStyle = {
 
 const inputStyle = {
   width: '100%',
-  padding: '12px',
-  border: '1px solid #ddd',
-  borderRadius: '6px',
-  fontSize: '16px',
+  padding: '12px 14px',
+  border: '1px solid rgba(12, 12, 12, 0.14)',
+  borderRadius: '12px',
+  fontSize: '14px',
   boxSizing: 'border-box',
   fontFamily: 'inherit',
+  background: '#fcfbf9',
 };
 

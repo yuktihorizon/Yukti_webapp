@@ -4,12 +4,13 @@ import { api } from '../lib/api';
 const CATEGORIES = ['Images', 'Articles', 'Presentations'];
 
 const inputStyle = {
-  padding: '12px',
-  border: '1px solid #ddd',
-  borderRadius: '6px',
+  padding: '12px 14px',
+  border: '1px solid rgba(12, 12, 12, 0.14)',
+  borderRadius: '12px',
   fontSize: '14px',
   width: '100%',
   boxSizing: 'border-box',
+  background: '#fcfbf9',
 };
 
 const labelStyle = {
@@ -17,7 +18,7 @@ const labelStyle = {
   marginBottom: '6px',
   fontWeight: '600',
   fontSize: '0.85rem',
-  color: '#333',
+  color: '#1a1a1a',
 };
 
 export default function BlogAdmin() {
@@ -173,28 +174,21 @@ export default function BlogAdmin() {
   };
 
   return (
-    <div>
-      <div style={{ maxWidth: 1200, margin: '0 auto 20px', padding: '0 20px', display: 'flex', justifyContent: 'flex-end' }}>
+    <div className="admin-page">
+      <div className="page-actions">
         <button
+          type="button"
+          className={`admin-btn ${showForm ? 'admin-btn-secondary' : 'admin-btn-primary'}`}
           onClick={() => { if (showForm) resetForm(); else setShowForm(true); }}
-          style={{
-            padding: '10px 20px',
-            background: showForm ? '#e5e5e5' : '#111',
-            color: showForm ? '#111' : '#fff',
-            border: '1px solid #111',
-            borderRadius: '999px',
-            cursor: 'pointer',
-            fontWeight: '600',
-          }}
         >
-          {showForm ? 'Cancel' : 'Add Post'}
+          {showForm ? 'Cancel' : 'Add post'}
         </button>
       </div>
 
       {showForm && (
-        <div style={{ maxWidth: 800, margin: '20px auto', padding: '24px', background: 'white', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ margin: '0 0 20px', color: '#333' }}>
-            {editingId ? 'Edit Blog Post' : 'Add New Blog Post'}
+        <div className="form-panel" style={{ maxWidth: 800 }}>
+          <h3 style={{ margin: '0 0 20px', fontSize: 18 }}>
+            {editingId ? 'Edit concept' : 'Add new concept'}
           </h3>
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
             {/* Category selector */}

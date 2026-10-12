@@ -447,16 +447,12 @@ export default function Products() {
   };
 
   return (
-    <div>
+    <div className="admin-page">
       {/* Header actions */}
-      <div style={{ 
-        maxWidth: 1200, 
-        margin: '0 auto 20px auto', 
-        padding: '0 20px',
-        display: 'flex',
-        justifyContent: 'flex-end'
-      }}>
+      <div className="page-actions">
         <button 
+          type="button"
+          className={`admin-btn ${showForm ? 'admin-btn-secondary' : 'admin-btn-primary'}`}
           onClick={() => {
             if (showForm) {
               resetForm();
@@ -464,38 +460,16 @@ export default function Products() {
               openAddProductForm();
             }
           }}
-          style={{
-            padding: '10px 20px',
-            background: showForm ? '#e5e5e5' : '#111111',
-            color: showForm ? '#111111' : '#ffffff',
-            border: '1px solid #111111',
-            borderRadius: '999px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}
         >
-          {showForm ? 'Cancel' : editingId ? 'Edit Product' : 'Add Product'}
+          {showForm ? 'Cancel' : editingId ? 'Edit product' : 'Add product'}
         </button>
       </div>
 
       {/* Category Filter */}
-      <div style={{ 
-        maxWidth: 1200, 
-        margin: '20px auto', 
-        padding: '0 20px'
-      }}>
-        <div style={{ 
-          background: 'white', 
-          padding: '16px', 
-          borderRadius: '8px',
-          marginBottom: '20px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          flexWrap: 'wrap'
-        }}>
-          <span style={{ fontWeight: '600', color: '#333' }}>Filter:</span>
+      <div className="admin-toolbar">
+          <span style={{ fontWeight: '600', color: 'var(--ink)', fontSize: 13 }}>Filter</span>
           <select 
+            className="admin-select"
             value={selectedMainCategory} 
             onChange={(e) => {
               const next = e.target.value;
@@ -508,12 +482,6 @@ export default function Products() {
                 setFormMainCategory(next);
               }
             }}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              fontSize: '14px'
-            }}
           >
             <option value="all">All Main Categories</option>
             {MAIN_CATEGORIES.map((mc) => (
@@ -521,13 +489,10 @@ export default function Products() {
             ))}
           </select>
           <select 
+            className="admin-select"
             value={selectedCategory} 
             onChange={(e) => setSelectedCategory(e.target.value)}
             style={{
-              padding: '8px 12px',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              fontSize: '14px',
               display: isFlatMainCategory(selectedMainCategory) ? 'none' : undefined,
             }}
           >
@@ -536,21 +501,15 @@ export default function Products() {
               <option key={cat._id} value={cat.name}>{cat.name}</option>
             ))}
           </select>
-          <span style={{ color: '#666', fontSize: '14px' }}>
+          <span style={{ color: 'var(--muted)', fontSize: '13px', marginLeft: 'auto' }}>
             {filteredItems.length} product{filteredItems.length !== 1 ? 's' : ''}
           </span>
-        </div>
+      </div>
 
-        {/* Category Management */}
-        <div style={{ 
-          background: 'white', 
-          padding: '16px', 
-          borderRadius: '8px',
-          marginBottom: '20px'
-        }}>
+      <div className="form-panel">
           <div style={{ marginBottom: '10px' }}>
-            <h4 style={{ margin: 0, color: '#333' }}>Add Sub-Category</h4>
-            <p style={{ margin: '4px 0 0 0', color: '#666', fontSize: '13px' }}>
+            <h4 style={{ margin: 0 }}>Add sub-category</h4>
+            <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: '13px' }}>
               Consumer Products use sub-categories (e.g. Chairs). Industrial Products
               sit directly under the main category — no sub-categories or dimensions.
               Industrial Services and Digital Products also have their own landing pages.
@@ -649,20 +608,12 @@ export default function Products() {
             )}
           </div>
         </div>
-      </div>
 
       {/* Form */}
       {showForm && (
-        <div style={{ 
-          maxWidth: 800, 
-          margin: '0 auto 20px auto', 
-          padding: '20px',
-          background: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ margin: '0 0 20px 0', color: '#333' }}>
-            {editingId ? 'Edit Product' : 'Add New Product'}
+        <div className="form-panel" style={{ maxWidth: 800 }}>
+          <h3 style={{ margin: '0 0 20px 0', fontSize: 18 }}>
+            {editingId ? 'Edit product' : 'Add new product'}
           </h3>
           <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '16px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

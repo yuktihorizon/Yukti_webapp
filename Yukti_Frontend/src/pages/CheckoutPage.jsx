@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../pages/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import '../styles/checkout.css';
+import {
+  getShippingSummary,
+  normalizePinCode,
+  OUTSIDE_NCR_SHIPPING_ESTIMATE,
+  readSavedPinCode,
+  savePinCode,
+} from '../data/ncrPinCodes';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function CheckoutPage() {
   const { cartItems, clearCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
@@ -23,13 +31,17 @@ export default function CheckoutPage() {
     apartment: '',
     city: '',
     state: '',
-    zipCode: '',
+    zipCode: normalizePinCode(location.state?.pinCode) || readSavedPinCode(),
     phone: ''
   });
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shipping = 500;
+  const shippingInfo = getShippingSummary(formData.zipCode);
+  const shipping = shippingInfo.shipping;
   const total = subtotal + shipping;
+  const pinReady = shippingInfo.status !== 'pending';
+  const pinServiceable = shippingInfo.status === 'ncr';
+  const pinOutside = shippingInfo.status === 'outside';
 
   useEffect(() => {
     // Load Razorpay script
@@ -90,7 +102,7 @@ export default function CheckoutPage() {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'zipCode' ? savePinCode(value) : value
     }));
   };
 
@@ -111,7 +123,6 @@ export default function CheckoutPage() {
       toast.error('Your cart is empty');
       return;
     }
-
     setLoading(true);
     try {
       // Create order on backend
@@ -150,7 +161,9 @@ export default function CheckoutPage() {
                 customerName: `${formData.firstName} ${formData.lastName}`,
                 items: cartItems,
                 subtotal: subtotal,
-                shipping: shipping,
+                shipping: shipping ?? 0,
+                shippingBilledSeparately: pinOutside,
+                shippingEstimate: pinOutside ? OUTSIDE_NCR_SHIPPING_ESTIMATE : null,
                 total: total,
                 shippingAddress: {
                   address: formData.address,
@@ -225,6 +238,24 @@ export default function CheckoutPage() {
         />
 
         <h2>Delivery</h2>
+        <input 
+          type="text" 
+          inputMode="numeric"
+          pattern="[0-9]{6}"
+          maxLength={6}
+          placeholder="Pin code *" 
+          name="zipCode"
+          value={formData.zipCode}
+          onChange={handleInputChange}
+          required
+        />
+        <p className={`pin-hint ${pinOutside ? 'pin-hint--note' : ''}`}>
+          {!pinReady
+            ? 'Enter your 6-digit pin code first. The total updates after that.'
+            : pinServiceable
+              ? 'This pin code is on the NCR list. Shipping Rs. 1,000 is added to the total.'
+              : `Shipping bill sent separately for this pin code. Estimated ${OUTSIDE_NCR_SHIPPING_ESTIMATE}.`}
+        </p>
         <div className="name-row">
           <input 
             type="text" 
@@ -294,14 +325,6 @@ export default function CheckoutPage() {
               </option>
             ))}
           </select>
-          <input 
-            type="text" 
-            placeholder="Zip code *" 
-            name="zipCode"
-            value={formData.zipCode}
-            onChange={handleInputChange}
-            required
-          />
         </div>
         <input 
           type="tel" 
@@ -316,7 +339,7 @@ export default function CheckoutPage() {
         <button 
           className="pay-now" 
           onClick={handlePayment}
-          disabled={loading}
+          disabled={loading || !pinReady}
         >
           {loading ? 'Processing...' : `Pay Now - Rs. ${total.toLocaleString()}`}
         </button>
@@ -341,8 +364,19 @@ export default function CheckoutPage() {
           </div>
           <div className="summary-row">
             <span>Shipping</span>
-            <span>Rs. {shipping.toLocaleString()}</span>
+            <span>
+              {!pinReady
+                ? 'Enter pin code'
+                : pinServiceable
+                  ? `Rs. ${shipping.toLocaleString()}`
+                  : 'Billed separately'}
+            </span>
           </div>
+          {pinOutside && (
+            <p className="shipping-separate-note">
+              Shipping bill sent separately for this pin code. Estimated {OUTSIDE_NCR_SHIPPING_ESTIMATE}.
+            </p>
+          )}
           <div className="summary-row total">
             <span>Total</span>
             <span>Rs. {total.toLocaleString()}</span>

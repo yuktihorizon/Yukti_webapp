@@ -28,6 +28,8 @@ const ThankYou = () => {
     items, 
     subtotal, 
     shipping, 
+    shippingBilledSeparately,
+    shippingEstimate,
     total,
     customerName,
     shippingAddress 
@@ -81,8 +83,17 @@ const ThankYou = () => {
             </div>
             <div className="cost-row">
               <span>Shipping</span>
-              <span>₹{shipping.toLocaleString()}</span>
+              <span>
+                {shippingBilledSeparately
+                  ? 'Billed separately'
+                  : `₹${Number(shipping || 0).toLocaleString()}`}
+              </span>
             </div>
+            {shippingBilledSeparately && (
+              <p className="tax-note">
+                Shipping bill sent separately. Estimated {shippingEstimate || 'Rs. 10,000 – Rs. 30,000'}.
+              </p>
+            )}
             <div className="cost-row total">
               <span>Total</span>
               <span>₹{total.toLocaleString()}</span>

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect, useRef, useCallback } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from "./components/Header";
@@ -7,6 +7,7 @@ import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import Loading from "./components/Loading";
 import BackgroundAudioToggle from "./components/BackgroundAudioToggle";
+import CatalogDownloadFab from "./components/CatalogDownloadFab";
 import { BackgroundAudioProvider } from "./context/BackgroundAudioContext";
 
 const Home = lazy(() => import("./components/Home"));
@@ -22,8 +23,11 @@ const ProductDetail = lazy(() => import("./pages/ProductDetails"));
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const ThankYou = lazy(() => import("./pages/ThankYou"));
 const Blog = lazy(() => import("./pages/Blog"));
+const Catalogues = lazy(() => import("./pages/Catalogues"));
 
 export default function App() {
+  const { pathname } = useLocation();
+  const hideChromeFooter = /^\/catalogues\/.+/.test(pathname);
   const [isLoading, setIsLoading] = useState(true);
   const splashTimerRef = useRef(null);
 
@@ -52,6 +56,7 @@ export default function App() {
         <Loading fullScreen onFinish={finishSplash} />
       )}
       <BackgroundAudioToggle />
+      <CatalogDownloadFab />
       <main className="bg-primary text-tertiary text-left">
         <ScrollToTop />
         <Header />
@@ -73,10 +78,12 @@ export default function App() {
             <Route path="/thank-you" element={<ThankYou />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:category/:id" element={<Blog />} />
+            <Route path="/catalogues" element={<Catalogues />} />
+            <Route path="/catalogues/:id" element={<Catalogues />} />
           </Routes>
         </Suspense>
         )}
-        <Footer /> 
+        {!hideChromeFooter && <Footer />}
       </main>
     </BackgroundAudioProvider>
   );

@@ -10,6 +10,7 @@ const location = require('./location');
 const admin = require('./admin');
 const servicePage = require('./servicePage');
 const blog = require('./blog');
+const catalogue = require('./catalogue');
 
 const setupRoutes = (app) => {
   app.use('/api/products', product);
@@ -24,6 +25,7 @@ const setupRoutes = (app) => {
   app.use('/api/admin', admin);
   app.use('/api/service-page', servicePage);
   app.use('/api/blog', blog);
+  app.use('/api/catalogues', catalogue);
 };
 
 module.exports = setupRoutes;

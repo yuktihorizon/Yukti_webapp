@@ -18,7 +18,9 @@ export default function Spotlight() {
     }
   };
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => {
+    fetchItems();
+  }, []);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -33,7 +35,7 @@ export default function Spotlight() {
     setForm({
       name: item.name,
       description: item.description,
-      media: item.mediaUrl || ''
+      media: item.mediaUrl || '',
     });
     setEditingId(item._id);
     setShowForm(true);
@@ -48,17 +50,16 @@ export default function Spotlight() {
       fd.append('description', form.description);
       if (form.media) fd.append('media', form.media);
       if (imageFile) fd.append('image', imageFile);
-      
+
       if (editingId) {
-        // TODO: Add update endpoint
         await api.put(`/admin/spotlight/${editingId}`, fd);
       } else {
         await api.post('/admin/spotlight', fd);
       }
-      
+
       await fetchItems();
       resetForm();
-    } catch (e) {
+    } catch (err) {
       alert('Operation failed');
     } finally {
       setLoading(false);
@@ -70,135 +71,76 @@ export default function Spotlight() {
     try {
       await api.delete(`/admin/spotlight/${id}`);
       await fetchItems();
-    } catch (e) {
+    } catch (err) {
       alert('Delete failed');
     }
   };
 
   return (
-    <div>
-      {/* Header actions */}
-      <div style={{ 
-        maxWidth: 1200, 
-        margin: '0 auto 20px auto', 
-        padding: '0 20px',
-        display: 'flex',
-        justifyContent: 'flex-end'
-      }}>
-        <button 
+    <div className="admin-page">
+      <div className="page-actions">
+        <button
+          type="button"
+          className={`admin-btn ${showForm ? 'admin-btn-secondary' : 'admin-btn-primary'}`}
           onClick={() => setShowForm(!showForm)}
-          style={{
-            padding: '10px 20px',
-            background: showForm ? '#e5e5e5' : '#111111',
-            color: showForm ? '#111111' : '#ffffff',
-            border: '1px solid #111111',
-            borderRadius: '999px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}
         >
-          {showForm ? 'Cancel' : 'Add New'}
+          {showForm ? 'Cancel' : 'Add new'}
         </button>
       </div>
 
-      {/* Form */}
       {showForm && (
-        <div style={{ 
-          maxWidth: 800, 
-          margin: '20px auto', 
-          padding: '20px',
-          background: 'white',
-          borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-        }}>
-          <h3 style={{ margin: '0 0 20px 0', color: '#333' }}>
-            {editingId ? 'Edit Spotlight Entry' : 'Add New Spotlight Entry'}
+        <div className="form-panel">
+          <h3 style={{ margin: '0 0 18px', fontSize: 18 }}>
+            {editingId ? 'Edit spotlight entry' : 'Add spotlight entry'}
           </h3>
-          <form onSubmit={handleCreate} style={{ display: 'grid', gap: '16px' }}>
-            <input
-              name="name"
-              placeholder="Name"
-              value={form.name}
-              onChange={handleChange}
-              style={{
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '6px',
-                fontSize: '16px',
-              }}
-              required
-            />
-            <input 
-              name="media" 
-              placeholder="Media URL (Instagram/YouTube link)" 
-              value={form.media} 
-              onChange={handleChange}
-              style={{
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '6px',
-                fontSize: '16px'
-              }}
-            />
-            <textarea 
-              name="description" 
-              placeholder="Description" 
-              value={form.description} 
-              onChange={handleChange}
-              style={{
-                padding: '12px',
-                border: '1px solid #ddd',
-                borderRadius: '6px',
-                fontSize: '16px',
-                minHeight: '100px',
-                resize: 'vertical'
-              }}
-            />
+          <form onSubmit={handleCreate} className="form-grid">
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
-                Profile Image {!editingId && '*'}
-              </label>
-              <input 
-                type="file" 
-                accept="image/*" 
+              <label className="form-label">Name</label>
+              <input
+                className="admin-input"
+                name="name"
+                placeholder="Creator name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="form-label">Media URL</label>
+              <input
+                className="admin-input"
+                name="media"
+                placeholder="Instagram / YouTube link"
+                value={form.media}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <label className="form-label">Description</label>
+              <textarea
+                className="admin-textarea"
+                name="description"
+                placeholder="Short bio or caption"
+                value={form.description}
+                onChange={handleChange}
+                rows={4}
+              />
+            </div>
+            <div>
+              <label className="form-label">Profile image {!editingId && '*'}</label>
+              <input
+                className="admin-input"
+                type="file"
+                accept="image/*"
                 onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                style={{
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '6px',
-                  fontSize: '16px'
-                }}
                 required={!editingId}
               />
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button 
-                type="submit" 
-                disabled={loading}
-                style={{
-                  padding: '12px 24px',
-                  background: loading ? '#d4d4d4' : '#111111',
-                  color: '#ffffff',
-                  border: '1px solid #111111',
-                  borderRadius: '999px',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  fontWeight: '600'
-                }}
-              >
-                {loading ? 'Saving...' : (editingId ? 'Update' : 'Create')}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <button type="submit" className="admin-btn admin-btn-primary" disabled={loading}>
+                {loading ? 'Saving…' : editingId ? 'Update' : 'Create'}
               </button>
-              <button 
-                type="button"
-                onClick={resetForm}
-                style={{
-                  padding: '12px 24px',
-                  background: '#ffffff',
-                  color: '#111111',
-                  border: '1px solid #111111',
-                  borderRadius: '999px',
-                  cursor: 'pointer'
-                }}
-              >
+              <button type="button" className="admin-btn admin-btn-secondary" onClick={resetForm}>
                 Cancel
               </button>
             </div>
@@ -206,120 +148,53 @@ export default function Spotlight() {
         </div>
       )}
 
-      {/* Items Grid */}
-      <div style={{ 
-        maxWidth: 1200, 
-        margin: '20px auto', 
-        padding: '0 20px'
-      }}>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', 
-          gap: '20px' 
-        }}>
+      {items.length === 0 ? (
+        <div className="admin-empty">
+          <h3>No spotlight entries yet</h3>
+          <p>Click “Add new” to feature your first creator.</p>
+        </div>
+      ) : (
+        <div className="spotlight-grid">
           {items.map((item) => (
-            <div key={item._id} style={{ 
-              background: 'white', 
-              borderRadius: '12px', 
-              overflow: 'hidden',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              transition: 'transform 0.2s'
-            }}
-            onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-            >
-              <div style={{ 
-                aspectRatio: '1 / 1', 
-                overflow: 'hidden', 
-                background: '#f6f6f6'
-              }}>
-                <img 
-                  src={item.imageUrl} 
-                  alt={item.name} 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    objectFit: 'cover' 
-                  }} 
-                />
-              </div>
-              <div style={{ padding: '20px' }}>
-                <h3 style={{ margin: '0 0 8px 0', color: '#333', fontSize: '1.2rem' }}>
-                  {item.name}
-                </h3>
-                {item.description && (
-                  <p style={{ 
-                    margin: '0 0 16px 0', 
-                    color: '#555', 
-                    fontSize: '0.9rem',
-                    lineHeight: '1.4'
-                  }}>
-                    {item.description}
-                  </p>
-                )}
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <article key={item._id} className="spotlight-card">
+              <img src={item.imageUrl} alt={item.name} />
+              <div className="spotlight-card-body">
+                <h3>{item.name}</h3>
+                {item.description && <p>{item.description}</p>}
+                <div className="spotlight-actions">
                   {item.mediaUrl && (
-                    <a 
-                      href={item.mediaUrl} 
-                      target="_blank" 
+                    <a
+                      href={item.mediaUrl}
+                      target="_blank"
                       rel="noreferrer"
-                      style={{
-                        padding: '6px 12px',
-                        background: '#111111',
-                        color: 'white',
-                        textDecoration: 'none',
-                        borderRadius: '999px',
-                        fontSize: '0.8rem'
-                      }}
+                      className="admin-btn admin-btn-primary"
+                      style={{ padding: '7px 12px', fontSize: 12 }}
                     >
-                      View Media
+                      View media
                     </a>
                   )}
-                  <button 
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-secondary"
+                    style={{ padding: '7px 12px', fontSize: 12 }}
                     onClick={() => handleEdit(item)}
-                    style={{
-                      padding: '6px 12px',
-                      background: '#ffffff',
-                      color: '#111111',
-                      border: '1px solid #111111',
-                      borderRadius: '999px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem'
-                    }}
                   >
                     Edit
                   </button>
-                  <button 
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-danger"
+                    style={{ padding: '7px 12px', fontSize: 12 }}
                     onClick={() => handleDelete(item._id)}
-                    style={{
-                      padding: '6px 12px',
-                      background: '#ffffff',
-                      color: '#111111',
-                      border: '1px solid #111111',
-                      borderRadius: '999px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem'
-                    }}
                   >
                     Delete
                   </button>
                 </div>
               </div>
-            </div>
+            </article>
           ))}
         </div>
-        
-        {items.length === 0 && (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '60px 20px',
-            color: '#666'
-          }}>
-            <h3>No spotlight entries yet</h3>
-            <p>Click "Add New" to create your first spotlight entry.</p>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }

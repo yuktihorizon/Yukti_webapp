@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 
 export default function Clients() {
@@ -30,7 +29,6 @@ export default function Clients() {
   const clients = useMemo(() => {
     const map = new Map();
 
-    // Aggregate from orders
     orders.forEach((order) => {
       const email = order.customerEmail || (order.shippingAddress && order.shippingAddress.email);
       if (!email) return;
@@ -65,7 +63,6 @@ export default function Clients() {
       map.set(email, existing);
     });
 
-    // Aggregate from contacts
     contacts.forEach((message) => {
       const email = message.email;
       if (!email) return;
@@ -106,7 +103,6 @@ export default function Clients() {
       addresses: Array.from(c.addresses),
     }));
 
-    // Search filter
     const filtered = list.filter((c) => {
       const term = searchTerm.toLowerCase();
       if (!term) return true;
@@ -118,14 +114,9 @@ export default function Clients() {
       );
     });
 
-    // Sort
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortKey === 'value') {
-        return (b.totalSpent || 0) - (a.totalSpent || 0);
-      }
-      if (sortKey === 'orders') {
-        return (b.totalOrders || 0) - (a.totalOrders || 0);
-      }
+    return [...filtered].sort((a, b) => {
+      if (sortKey === 'value') return (b.totalSpent || 0) - (a.totalSpent || 0);
+      if (sortKey === 'orders') return (b.totalOrders || 0) - (a.totalOrders || 0);
 
       const aDate = a.lastOrderDate || a.lastContactDate;
       const bDate = b.lastOrderDate || b.lastContactDate;
@@ -134,8 +125,6 @@ export default function Clients() {
       if (!bDate) return -1;
       return bDate - aDate;
     });
-
-    return sorted;
   }, [orders, contacts, searchTerm, sortKey]);
 
   const formatDate = (date) => {
@@ -150,235 +139,111 @@ export default function Clients() {
   };
 
   if (loading) {
-    return <div className="admin-loading">Loading client CRM...</div>;
+    return (
+      <div className="admin-loading">
+        <div style={{ textAlign: 'center' }}>
+          <div className="admin-spinner" />
+          Loading clients…
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div>
-      {/* Controls */}
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: '20px auto',
-          padding: '0 20px',
-        }}
-      >
-        <div
-          style={{
-            background: 'white',
-            padding: '16px',
-            borderRadius: '8px',
-            marginBottom: '20px',
-            display: 'grid',
-            gridTemplateColumns: '1fr auto',
-            gap: '16px',
-            alignItems: 'center',
-          }}
+    <div className="admin-page">
+      <div className="admin-toolbar">
+        <input
+          className="admin-input"
+          type="text"
+          placeholder="Search by name, email, phone, or notes…"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ flex: 1, minWidth: 200 }}
+        />
+        <select
+          className="admin-select"
+          value={sortKey}
+          onChange={(e) => setSortKey(e.target.value)}
         >
-          <input
-            type="text"
-            placeholder="Search by name, email, phone, or notes..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              padding: '12px',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              fontSize: '16px',
-            }}
-          />
+          <option value="lastActivity">Sort by last activity</option>
+          <option value="value">Sort by total value</option>
+          <option value="orders">Sort by total orders</option>
+        </select>
+      </div>
 
-          <select
-            value={sortKey}
-            onChange={(e) => setSortKey(e.target.value)}
-            style={{
-              padding: '12px',
-              border: '1px solid #ddd',
-              borderRadius: '6px',
-              fontSize: '16px',
-              minWidth: '180px',
-            }}
-          >
-            <option value="lastActivity">Sort by last activity</option>
-            <option value="value">Sort by total value</option>
-            <option value="orders">Sort by total orders</option>
-          </select>
+      {clients.length === 0 ? (
+        <div className="admin-empty">
+          <h3>No client activity yet</h3>
+          <p>When users place orders or submit contact forms, they appear here automatically.</p>
         </div>
-      </div>
-
-      {/* Clients grid */}
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: '0 20px 20px 20px',
-        }}
-      >
-        {clients.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '60px 20px',
-              color: '#666',
-            }}
-          >
-            <h3>No client activity yet</h3>
-            <p>When users place orders or submit contact forms, they will appear here automatically.</p>
-          </div>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: '20px',
-            }}
-          >
-            {clients.map((client) => (
-              <div
-                key={client.email}
-                style={{
-                  background: 'white',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  border: '1px solid #e9ecef',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                }}
-              >
-                {/* Header: basic identity */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: '999px',
-                        border: '1px solid #111111',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 700,
-                        color: '#111111',
-                      }}
-                    >
-                      {(client.name || client.email)[0]?.toUpperCase() || '?'}
-                    </div>
-                    <div>
-                      <div
-                        style={{
-                          fontWeight: 600,
-                          color: '#1a202c',
-                          marginBottom: 4,
-                        }}
-                      >
-                        {client.name || 'Unknown name'}
-                      </div>
-                      <div style={{ fontSize: 13, color: '#4a5568' }}>{client.email}</div>
-                      {client.phone && (
-                        <div style={{ fontSize: 13, color: '#4a5568', marginTop: 2 }}>{client.phone}</div>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right', fontSize: 12, color: '#718096' }}>
-                    <div>Last order: {formatDate(client.lastOrderDate)}</div>
-                    <div>Last contact: {formatDate(client.lastContactDate)}</div>
-                  </div>
+      ) : (
+        <div className="admin-grid-cards">
+          {clients.map((client) => (
+            <article key={client.email} className="client-card">
+              <div className="client-card-top">
+                <div className="client-avatar">
+                  {(client.name || client.email)[0]?.toUpperCase() || '?'}
                 </div>
-
-                {/* Metrics */}
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(3, minmax(0,1fr))',
-                    gap: 8,
-                    marginTop: 4,
-                  }}
-                >
-                  <div
-                    style={{
-                      background: '#f8f9fa',
-                      padding: '8px 10px',
-                      borderRadius: 8,
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div style={{ fontSize: 11, color: '#718096', marginBottom: 2 }}>Orders</div>
-                    <div style={{ fontWeight: 600, color: '#1a202c' }}>{client.totalOrders}</div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontWeight: 700, color: '#111' }}>
+                    {client.name || 'Unknown name'}
                   </div>
-                  <div
-                    style={{
-                      background: '#f8f9fa',
-                      padding: '8px 10px',
-                      borderRadius: 8,
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div style={{ fontSize: 11, color: '#718096', marginBottom: 2 }}>Total Value</div>
-                    <div style={{ fontWeight: 600, color: '#38a169' }}>₹{client.totalSpent || 0}</div>
-                  </div>
-                  <div
-                    style={{
-                      background: '#f8f9fa',
-                      padding: '8px 10px',
-                      borderRadius: 8,
-                      textAlign: 'center',
-                    }}
-                  >
-                    <div style={{ fontSize: 11, color: '#718096', marginBottom: 2 }}>Addresses</div>
-                    <div style={{ fontWeight: 600, color: '#1a202c' }}>{client.addresses.length}</div>
-                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>{client.email}</div>
+                  {client.phone && (
+                    <div style={{ fontSize: 13, color: 'var(--muted)' }}>{client.phone}</div>
+                  )}
                 </div>
-
-                {/* Addresses (short) */}
-                {client.addresses.length > 0 && (
-                  <div
-                    style={{
-                      background: '#f8f9fa',
-                      padding: '8px 10px',
-                      borderRadius: 8,
-                      fontSize: 12,
-                      color: '#4a5568',
-                    }}
-                  >
-                    <strong style={{ fontSize: 12 }}>Addresses:</strong>{' '}
-                    {client.addresses.slice(0, 2).join(' · ')}
-                    {client.addresses.length > 2 && ' …'}
-                  </div>
-                )}
-
-                {/* Last message */}
-                {client.lastMessage && (
-                  <div
-                    style={{
-                      background: '#f5f5f5',
-                      padding: '10px 12px',
-                      borderRadius: 8,
-                      borderLeft: '3px solid #111111',
-                      fontSize: 12,
-                      color: '#111111',
-                    }}
-                  >
-                    <div style={{ fontWeight: 600, marginBottom: 4 }}>Last message</div>
-                    <div
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {client.lastMessage}
-                    </div>
-                  </div>
-                )}
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+
+              <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--muted-soft)' }}>
+                <span>Order: {formatDate(client.lastOrderDate)}</span>
+                <span>·</span>
+                <span>Contact: {formatDate(client.lastContactDate)}</span>
+              </div>
+
+              <div className="metric-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <div className="metric-tile">
+                  <div className="label">Orders</div>
+                  <div className="value">{client.totalOrders}</div>
+                </div>
+                <div className="metric-tile">
+                  <div className="label">Value</div>
+                  <div className="value">₹{client.totalSpent || 0}</div>
+                </div>
+                <div className="metric-tile">
+                  <div className="label">Addresses</div>
+                  <div className="value">{client.addresses.length}</div>
+                </div>
+              </div>
+
+              {client.addresses.length > 0 && (
+                <div className="list-block" style={{ marginTop: 0, fontSize: 12 }}>
+                  <strong>Addresses:</strong> {client.addresses.slice(0, 2).join(' · ')}
+                  {client.addresses.length > 2 && ' …'}
+                </div>
+              )}
+
+              {client.lastMessage && (
+                <div className="list-block" style={{ marginTop: 0, borderLeft: '3px solid #111' }}>
+                  <strong style={{ fontSize: 12 }}>Last message</strong>
+                  <p
+                    style={{
+                      marginTop: 6,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                      fontSize: 13,
+                    }}
+                  >
+                    {client.lastMessage}
+                  </p>
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-

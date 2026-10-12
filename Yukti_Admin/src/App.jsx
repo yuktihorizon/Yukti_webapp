@@ -9,6 +9,7 @@ import Orders from './pages/Orders.jsx';
 import Clients from './pages/Clients.jsx';
 import ServicePage from './pages/ServicePage.jsx';
 import BlogAdmin from './pages/BlogAdmin.jsx';
+import Catalogues from './pages/Catalogues.jsx';
 import AdminLayout from './components/AdminLayout.jsx';
 import { getToken } from './lib/auth.js';
 
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="contacts" element={<Contacts />} />
         <Route path="service-page" element={<ServicePage />} />
         <Route path="blog" element={<BlogAdmin />} />
+        <Route path="catalogues" element={<Catalogues />} />
         <Route path="orders" element={<Orders />} />
         <Route path="clients" element={<Clients />} />
       </Route>

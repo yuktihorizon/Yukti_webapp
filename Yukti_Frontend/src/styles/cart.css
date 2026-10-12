@@ -2,7 +2,7 @@
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    padding: 200px;
+    padding: 120px 48px 80px;
     font-family: sans-serif;
     gap: 40px;
   }
@@ -103,6 +103,94 @@
     font-weight: bold;
     border-top: 1px solid #ddd;
     padding-top: 10px;
+  }
+
+  .shipping-note {
+    margin: -6px 0 12px;
+    font-size: 0.8rem;
+    color: #777;
+  }
+
+  .shipping-note--alert {
+    color: #8a5a00;
+  }
+
+  .cart-pin {
+    margin: 0 0 28px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #e8e8e8;
+  }
+
+  .cart-pin-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #111;
+  }
+
+  .cart-pin-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    height: 48px;
+    border: 1px solid #d8d8d8;
+    border-radius: 999px;
+    background: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cart-pin-field svg {
+    flex-shrink: 0;
+    color: #888;
+  }
+
+  .cart-pin-field:focus-within {
+    border-color: #111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+  }
+
+  .cart-pin-field:focus-within svg {
+    color: #111;
+  }
+
+  .cart-pin-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0;
+    font-size: 17px;
+    letter-spacing: 0.32em;
+    font-variant-numeric: tabular-nums;
+    color: #111;
+  }
+
+  .cart-pin-input::placeholder {
+    letter-spacing: 0.32em;
+    color: #c4c4c4;
+  }
+
+  .cart-pin-status {
+    margin: 10px 2px 0;
+    font-size: 12px;
+    line-height: 1.4;
+    color: #777;
+  }
+
+  .cart-pin--ncr .cart-pin-field {
+    border-color: #111;
+  }
+
+  .cart-pin--ncr .cart-pin-status {
+    color: #111;
+  }
+
+  .cart-pin--outside .cart-pin-status {
+    color: #8a5a00;
   }
   
   .checkout-button {

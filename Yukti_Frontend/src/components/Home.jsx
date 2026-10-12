@@ -43,7 +43,7 @@ const Home = () => {
             <div className="hero-buttons__third hero-buttons__third--left">
               <Link to="/allproducts" className="hero-buttons__link">
                 <button type="button" className="shop-button">
-                  Our Catalogue
+                  Our Products
                 </button>
               </Link>
             </div>
