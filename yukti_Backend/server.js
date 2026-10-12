@@ -17,12 +17,14 @@ const startServer = async () => {
   }
 
   const app = express();
+  app.set('trust proxy', 1);
 
   // Comma-separated FRONTEND_URL values, e.g. http://localhost:5173,http://localhost:5175
   const allowedOrigins = (process.env.FRONTEND_URL || '')
     .split(',')
     .map((s) => s.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .concat(['https://yuktihorizon.in', 'https://www.yuktihorizon.in']);
 
   const isLocalDevOrigin = (origin) =>
     /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin || '');

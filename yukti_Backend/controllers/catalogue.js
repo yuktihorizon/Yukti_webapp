@@ -4,6 +4,13 @@ const Catalogue = require('../models/Catalogue');
 const cloudinary = require('../config/cloudinary');
 const streamifier = require('streamifier');
 const { prepareCoverBuffer } = require('../utils/compressCatalogue');
+const {
+  savePdfFile,
+  savePdfFromPath,
+  deletePdf,
+  openPdfStream,
+  getPdfInfo,
+} = require('../utils/catalogueStorage');
 
 const CATALOGUE_DIR = path.join(__dirname, '../uploads/catalogues');
 
@@ -37,8 +44,12 @@ const removeLocalPdf = async (filePath) => {
 };
 
 const publicPdfUrl = (req, id) => {
-  const base = (process.env.BACKEND_PUBLIC_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
-  return `${base}/api/catalogues/${id}/file`;
+  const forwarded = (req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  const proto = forwarded || req.protocol || 'https';
+  const host = req.get('host');
+  const envBase = (process.env.BACKEND_PUBLIC_URL || '').replace(/\/$/, '');
+  const base = envBase || `${proto}://${host}`;
+  return `${base.replace(/\/$/, '')}/api/catalogues/${id}/file`;
 };
 
 const toCatalogueJson = (req, doc) => {
@@ -91,22 +102,36 @@ exports.getAllCatalogues = async (req, res) => {
   }
 };
 
+const sendPdfHeaders = (res, fileName) => {
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `inline; filename="${safeFileName(fileName)}"`);
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+};
+
 exports.streamCataloguePdf = async (req, res) => {
   try {
     const catalogue = await Catalogue.findById(req.params.id);
     if (!catalogue) return res.status(404).json({ error: 'Catalogue not found' });
 
     if (catalogue.filePath && fs.existsSync(catalogue.filePath)) {
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader(
-        'Content-Disposition',
-        `inline; filename="${safeFileName(catalogue.fileName)}"`
-      );
+      sendPdfHeaders(res, catalogue.fileName);
+      const stat = fs.statSync(catalogue.filePath);
+      res.setHeader('Content-Length', stat.size);
       return fs.createReadStream(catalogue.filePath).pipe(res);
     }
 
-    if (catalogue.pdfUrl && /^https?:\/\//.test(catalogue.pdfUrl)) {
-      return res.redirect(catalogue.pdfUrl);
+    if (catalogue.gridFsId) {
+      const download = openPdfStream(catalogue.gridFsId);
+      if (!download) return res.status(404).json({ error: 'PDF file is missing' });
+      sendPdfHeaders(res, catalogue.fileName);
+      const info = await getPdfInfo(catalogue.gridFsId);
+      if (info?.length) res.setHeader('Content-Length', info.length);
+      download.on('error', (err) => {
+        console.error(err);
+        if (!res.headersSent) res.status(404).json({ error: 'PDF file is missing' });
+      });
+      return download.pipe(res);
     }
 
     return res.status(404).json({ error: 'PDF file is missing' });
@@ -128,7 +153,10 @@ exports.createCatalogue = async (req, res) => {
   if (!isPdfFile(pdfFile)) return res.status(400).json({ error: 'Only PDF files are allowed' });
 
   try {
-    const filePath = await saveOriginalPdf(pdfFile);
+    const [filePath, gridFsId] = await Promise.all([
+      saveOriginalPdf(pdfFile),
+      savePdfFile(pdfFile),
+    ]);
     let coverUrl = '';
     let coverPublicId = '';
 
@@ -143,6 +171,7 @@ exports.createCatalogue = async (req, res) => {
       description,
       pdfUrl: 'pending',
       filePath,
+      gridFsId,
       coverUrl,
       coverPublicId,
       fileName: pdfFile.originalname,
@@ -179,9 +208,13 @@ exports.updateCatalogue = async (req, res) => {
       if (!isPdfFile(pdfFile)) {
         return res.status(400).json({ error: 'Only PDF files are allowed' });
       }
-      const filePath = await saveOriginalPdf(pdfFile);
-      await removeLocalPdf(catalogue.filePath);
+      const [filePath, gridFsId] = await Promise.all([
+        saveOriginalPdf(pdfFile),
+        savePdfFile(pdfFile),
+      ]);
+      await Promise.all([removeLocalPdf(catalogue.filePath), deletePdf(catalogue.gridFsId)]);
       catalogue.filePath = filePath;
+      catalogue.gridFsId = gridFsId;
       catalogue.fileName = pdfFile.originalname;
       catalogue.fileSize = pdfFile.size;
       catalogue.pdfUrl = publicPdfUrl(req, catalogue._id);
@@ -209,6 +242,7 @@ exports.deleteCatalogue = async (req, res) => {
 
     await Promise.all([
       removeLocalPdf(catalogue.filePath),
+      deletePdf(catalogue.gridFsId),
       destroyAsset(catalogue.coverPublicId, 'image'),
     ]);
 

@@ -106,8 +106,9 @@
   }
 
   .shipping-note {
-    margin: -6px 0 12px;
-    font-size: 0.8rem;
+    margin: -4px 0 14px;
+    font-size: 0.78rem;
+    line-height: 1.45;
     color: #777;
   }
 

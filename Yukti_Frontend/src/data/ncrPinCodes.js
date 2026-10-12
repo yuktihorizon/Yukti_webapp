@@ -57,7 +57,8 @@ export const NCR_PIN_CODES = new Set([
 ]);
 
 export const NCR_SHIPPING_CHARGE = 1000;
-export const OUTSIDE_NCR_SHIPPING_ESTIMATE = "Rs. 10,000 to Rs. 30,000";
+export const OUTSIDE_NCR_SHIPPING_DISCLAIMER =
+  "Shipping charges not included in this amount. Shipping bill sent separately for this pincode.";
 export const CHECKOUT_PIN_STORAGE_KEY = "checkoutPin";
 
 export function readSavedPinCode() {

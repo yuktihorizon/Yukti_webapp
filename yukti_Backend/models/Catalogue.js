@@ -6,6 +6,7 @@ const catalogueSchema = new mongoose.Schema(
     description: { type: String, default: '', trim: true },
     pdfUrl: { type: String, required: true },
     filePath: { type: String, default: '' },
+    gridFsId: { type: String, default: '' },
     publicId: { type: String, default: '' },
     resourceType: { type: String, default: 'raw' },
     coverUrl: { type: String, default: '' },

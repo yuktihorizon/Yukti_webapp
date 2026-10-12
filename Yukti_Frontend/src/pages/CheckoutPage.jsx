@@ -7,7 +7,7 @@ import '../styles/checkout.css';
 import {
   getShippingSummary,
   normalizePinCode,
-  OUTSIDE_NCR_SHIPPING_ESTIMATE,
+  OUTSIDE_NCR_SHIPPING_DISCLAIMER,
   readSavedPinCode,
   savePinCode,
 } from '../data/ncrPinCodes';
@@ -163,7 +163,6 @@ export default function CheckoutPage() {
                 subtotal: subtotal,
                 shipping: shipping ?? 0,
                 shippingBilledSeparately: pinOutside,
-                shippingEstimate: pinOutside ? OUTSIDE_NCR_SHIPPING_ESTIMATE : null,
                 total: total,
                 shippingAddress: {
                   address: formData.address,
@@ -254,7 +253,7 @@ export default function CheckoutPage() {
             ? 'Enter your 6-digit pin code first. The total updates after that.'
             : pinServiceable
               ? 'This pin code is on the NCR list. Shipping Rs. 1,000 is added to the total.'
-              : `Shipping bill sent separately for this pin code. Estimated ${OUTSIDE_NCR_SHIPPING_ESTIMATE}.`}
+              : OUTSIDE_NCR_SHIPPING_DISCLAIMER}
         </p>
         <div className="name-row">
           <input 
@@ -374,7 +373,7 @@ export default function CheckoutPage() {
           </div>
           {pinOutside && (
             <p className="shipping-separate-note">
-              Shipping bill sent separately for this pin code. Estimated {OUTSIDE_NCR_SHIPPING_ESTIMATE}.
+              {OUTSIDE_NCR_SHIPPING_DISCLAIMER}
             </p>
           )}
           <div className="summary-row total">

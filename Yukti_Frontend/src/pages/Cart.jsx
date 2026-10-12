@@ -8,7 +8,7 @@ import { MapPin } from 'lucide-react';
 import {
   getShippingSummary,
   normalizePinCode,
-  OUTSIDE_NCR_SHIPPING_ESTIMATE,
+  OUTSIDE_NCR_SHIPPING_DISCLAIMER,
   readSavedPinCode,
   savePinCode,
 } from '../data/ncrPinCodes';
@@ -111,7 +111,7 @@ const Cart = () => {
             <p className="cart-pin-status">NCR · Rs. 1,000 shipping included</p>
           )}
           {shippingInfo.status === 'outside' && (
-            <p className="cart-pin-status">Billed separately · {OUTSIDE_NCR_SHIPPING_ESTIMATE}</p>
+            <p className="cart-pin-status">{OUTSIDE_NCR_SHIPPING_DISCLAIMER}</p>
           )}
           {shippingInfo.status === 'pending' && (
             <p className="cart-pin-status">Enter 6 digits to calculate shipping</p>
@@ -132,6 +132,9 @@ const Cart = () => {
                 : 'Billed separately'}
           </span>
         </div>
+        {shippingInfo.status === 'outside' && (
+          <p className="shipping-note shipping-note--alert">{OUTSIDE_NCR_SHIPPING_DISCLAIMER}</p>
+        )}
         <div className="summary-row total">
           <span>Total</span>
           <span>Rs. {total.toLocaleString()}</span>

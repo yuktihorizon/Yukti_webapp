@@ -3,15 +3,25 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, BookOpen, Download, ExternalLink } from 'lucide-react';
 import '../styles/catalogues.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050/api';
+function getApiBase() {
+  const env = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1') {
+      if (env && !/localhost|127\.0\.0\.1/.test(env)) {
+        return env.replace(/^http:\/\//, 'https://');
+      }
+      return '/api';
+    }
+  }
+  return env || 'http://localhost:5050/api';
+}
 
 function resolvePdfUrl(item) {
-  if (!item?.pdfUrl) return `${API_BASE_URL}/catalogues/${item._id}/file`;
-  if (item.pdfUrl.startsWith('http')) return item.pdfUrl;
-  if (item.pdfUrl.startsWith('/api/')) {
-    return `${API_BASE_URL.replace(/\/api\/?$/, '')}${item.pdfUrl}`;
+  if (!item?._id || item._id === 'local-horizon') {
+    return item?.pdfUrl || '/Yukti-Horizon-Catalogue.pdf';
   }
-  return item.pdfUrl;
+  return `${getApiBase()}/catalogues/${item._id}/file`;
 }
 
 const LOCAL_FALLBACK = {
@@ -31,7 +41,7 @@ export default function Catalogues() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/catalogues`);
+        const res = await fetch(`${getApiBase()}/catalogues`);
         const data = res.ok ? await res.json() : [];
         setItems(Array.isArray(data) && data.length ? data : [LOCAL_FALLBACK]);
       } catch (err) {

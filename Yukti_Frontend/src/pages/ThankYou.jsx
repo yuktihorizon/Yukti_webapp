@@ -29,7 +29,6 @@ const ThankYou = () => {
     subtotal, 
     shipping, 
     shippingBilledSeparately,
-    shippingEstimate,
     total,
     customerName,
     shippingAddress 
@@ -91,7 +90,7 @@ const ThankYou = () => {
             </div>
             {shippingBilledSeparately && (
               <p className="tax-note">
-                Shipping bill sent separately. Estimated {shippingEstimate || 'Rs. 10,000 – Rs. 30,000'}.
+                Shipping charges not included in this amount. Shipping bill sent separately for this pincode.
               </p>
             )}
             <div className="cost-row total">
